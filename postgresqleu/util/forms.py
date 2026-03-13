@@ -8,7 +8,9 @@ import django.db.models.base
 
 import pickle
 import base64
+from functools import partial
 from itertools import groupby
+from operator import attrgetter
 
 from .widgets import InlineImageUploadWidget, InlinePdfUploadWidget
 from .widgets import LinkForCodeWidget, SubmitButtonWidget, SelectSetValueWidget
@@ -121,25 +123,24 @@ class ChoiceArrayField(ArrayField):
 
 
 class GroupedIterator(forms.models.ModelChoiceIterator):
+    def __init__(self, field, groupby):
+        self.groupby = groupby
+        super().__init__(field)
+
     def __iter__(self):
-        for group, choices in groupby(self.queryset.all().order_by(self.field.groupfield, *self.field.orderby),
-                                      key=lambda x: getattr(x, self.field.groupfield)):
+        for group, choices in groupby(self.queryset, self.groupby):
             yield (group,
                    [self.choice(c) for c in choices])
 
 
-class Grouped(object):
-    def __init__(self, groupfield, queryset, *args, **kwargs):
-        self.orderby = queryset.query.order_by
-        super(Grouped, self).__init__(*args, queryset=queryset, **kwargs)
+class GroupedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def __init__(self, *args, groupfield, **kwargs):
+        if isinstance(groupfield, str):
+            groupfield = attrgetter(groupfield)
+        self.iterator = partial(GroupedIterator, groupby=groupfield)
         self.groupfield = groupfield
-
-    def _get_choices(self):
-        return GroupedIterator(self)
-
-
-class GroupedModelMultipleChoiceField(Grouped, forms.ModelMultipleChoiceField):
-    choices = property(Grouped._get_choices, forms.ModelMultipleChoiceField._set_choices)
+        super().__init__(*args, **kwargs)
+        self.orderby = self.queryset.query.order_by
 
 
 class IntegerBooleanField(forms.BooleanField):
