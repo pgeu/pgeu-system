@@ -3777,7 +3777,9 @@ def admin_registration_list(request, urlname):
              'invoice__id', 'invoice__finalized', 'invoice__paidat', 'invoice__paidusing__id',
              'bulkpayment__id', 'bulkpayment__paidat', 'bulkpayment__numregs', 'bulkpayment__invoice__id',
              'bulkpayment__invoice__finalized', 'bulkpayment__invoice__paidat',
-             'bulkpayment__invoice__paidusing__id'
+             'bulkpayment__invoice__paidusing__id',
+             'registrationwaitlistentry__enteredon', 'registrationwaitlistentry__offeredon',
+             'registrationwaitlistentry__offerexpires',
              ).
         extra(select={
             'waitlist_offers_made': """CASE WHEN "confreg_registrationwaitlistentry"."registration_id" IS NULL THEN 0 ELSE (SELECT count(*) FROM confreg_registrationwaitlisthistory h WHERE h.waitlist_id="confreg_registrationwaitlistentry"."registration_id" AND h.text LIKE 'Made offer%%')  END""",
