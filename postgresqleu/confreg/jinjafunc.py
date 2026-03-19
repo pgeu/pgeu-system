@@ -24,6 +24,7 @@ from postgresqleu.util.templatetags import svgcharts
 from postgresqleu.util.templatetags.assets import do_render_asset
 from postgresqleu.util.messaging import get_messaging_class_from_typename
 from postgresqleu.util.markup import pgmarkdown
+from postgresqleu.util.qr import generate_base64_qr
 
 import markupsafe
 import jinja2
@@ -334,6 +335,24 @@ def filter_inlinecss(context, contents, cssname):
     return p.run()
 
 
+@pass_context
+def filter_qrimage(context, code, size=150, center=False):
+    style = {
+        'width': '{}px'.format(size),
+        'height': '{}px'.format(size),
+    }
+    if center:
+        style.update({
+            'display': 'block',
+            'margin': 'auto',
+        })
+    return '<img style="{2};" width="{1}" height="{1}" src="data:image/png;base64,{0}">'.format(
+        generate_base64_qr(code, 2, size),
+        size,
+        ';'.join('{}:{}'.format(k, v) for k, v in style.items()),
+    )
+
+
 extra_filters = {
     'format_currency': format_currency,
     'escapejs': defaultfilters.escapejs_filter,
@@ -354,6 +373,7 @@ extra_filters = {
     'lookup': filter_lookup,
     'social_links': filter_social_links,
     'inlinecss': filter_inlinecss,
+    'qrimage': filter_qrimage,
 }
 
 extra_globals = {
