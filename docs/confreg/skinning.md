@@ -62,6 +62,45 @@ content
 
 You can of course also declare any other blocks you want.
 
+## Filters
+
+Other than the standard jinja2 filters, a number of custom filters are
+available:
+
+format_currency
+:  Format a number according to the active currency rules, e.g. "3" becomes "€3.00".
+
+datetimeformat
+:  Format a datetime in the conference system configured standard format
+
+timesince
+:  Return a string reprsenting the time since the specified timestamp
+
+timeuntil
+:  Return a string representing the time until the specified timestamp
+
+gropuby_sort
+:  Similar to the builtin groupby filter but can group by objects and not just values,
+   and can sort the grouped objects by attribute.
+
+leadingnbsp
+:  Replaces leading spaces with &nbsp; to make them non-breaking
+
+shuffle
+:  Shuffles items in a list in random order
+
+slugify
+:  Generate a slug version of the text
+
+yesno
+:  Returns the first or second part of the comma separated string depending on if
+   the value given is true or false.
+
+qrimage
+:  Creates a QR code image (png) as an <img> tag with an inline base64 image
+   based on the data passed in. Takes optional parameters center=True to center the
+   image, and size=nnn to make it that many pixels width and height.
+
 ## Variables
 
 When rendering the main conference pages, the following variables are
