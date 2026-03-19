@@ -12,8 +12,10 @@ import django.db.models
 import os.path
 import random
 from itertools import groupby
+import base64
 from datetime import datetime, date, time
 import dateutil.parser
+import re
 import textwrap
 from Cryptodome.Hash import SHA
 
@@ -440,6 +442,10 @@ def _get_contenttype_from_extension(f):
     return _map[e]
 
 
+# We should support other than image/png at some point, but for now, hardcode to that
+_re_base64_image = re.compile(r'<img\s+([^>]+)src="data:(image/png);base64,([^"]+)"([^>]*)>', flags=re.I)
+
+
 def render_jinja_conference_mail(conference, templatename, dictionary, subject):
     templatename, templateext = os.path.splitext(templatename)
     if templateext not in ('.txt', '.md', '.mail'):
@@ -492,6 +498,37 @@ def render_jinja_conference_mail(conference, templatename, dictionary, subject):
                         with open(os.path.join(p, filename), 'rb') as f:
                             attachments.append((name, _get_contenttype_from_extension(name), f.read()))
                             break
+
+            # Next if there are any inline attachments, convert them to
+            # cid attachments for better compatibility
+            class ImageReplacer:
+                def __init__(self):
+                    self.imgnum = 0
+
+                def replacehtml(self, m):
+                    self.imgnum += 1
+
+                    # We should support other than image/png at some point,
+                    # but for now, hardcode to that. Keep in sync with the
+                    # regexp above.
+                    _name = 'image{}.png'.format(self.imgnum)
+
+                    attachments.append((_name, m.group(2), base64.b64decode(m.group(3))))
+
+                    return '<img {} src="cid:{}@img" {}>'.format(
+                        (m.group(1) or '').strip(),
+                        _name,
+                        (m.group(4) or '').strip(),
+                    )
+
+                def replacetext(self, m):
+                    self.imgnum += 1
+                    return '* See attachment {} *'.format('image{}.png'.format(self.imgnum))
+
+            htmlpart, num = _re_base64_image.subn(ImageReplacer().replacehtml, htmlpart)
+            if num > 0:
+                txtpart, num = _re_base64_image.subn(ImageReplacer().replacetext, txtpart)
+
             return (txtpart, htmlpart, attachments)
         else:
             # TXT does not exist, so we ignore and move on to the next level

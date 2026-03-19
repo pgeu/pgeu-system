@@ -96,6 +96,29 @@ will give the attendees full name, to be used for example in
 greetings. A list of (most) available attributes are included below
 the preview field.
 
+#### Templating tricks
+
+Al lthe template filters used in [skinning](skinning) can be used in
+email templates as well.
+
+For images, if an inline base64 image is added to the template, it
+will automatically be converted to a content-id linked attachment,
+since major email providers (such as gmail) don't render base64 images
+properly. This means that for example the `qrimage` filter can be used
+to render the QR code from a ticket by using:
+
+```
+{{ attendee.fullidtoken | qrimage }}
+```
+
+Or to get it horizontally centered, use:
+
+```
+{{ attendee.fullidtoken | qrimage(center=True) }}
+```
+
+
+
 ## Sponsor emails
 
 Sponsor emails are like attendee emails, except sent to sponsors and
