@@ -9,7 +9,6 @@ import email.policy
 import re
 
 from postgresqleu.util.context_processors import settings_context
-from postgresqleu.util.markup import pgmarkdown
 from postgresqleu.confreg.jinjafunc import render_jinja_template, render_jinja_conference_mail
 
 from django.utils import timezone
