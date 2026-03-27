@@ -48,7 +48,7 @@ historically for any current or future managers of the sponsor.
 <h2>New email</h2>
 <form method="post" action="." class="form-horizontal">{% csrf_token %}
 <input type="hidden" name="sendto" value="{{sendto}}">
-{%include "confreg/admin_backend_form_content.html" with savebutton="Send mail" cancelurl="../" %}
+{%include "confreg/admin_backend_form_content.html" with savebutton="Prepare email to send" cancelurl="../" %}
 </form>
 
 <a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>

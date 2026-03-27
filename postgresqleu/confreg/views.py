@@ -4721,7 +4721,7 @@ def admin_send_external_email(request, urlname):
         'helplink': 'emails#external',
         'whatverb': 'Send',
         'what': 'external email',
-        'savebutton': 'Send email',
+        'savebutton': 'Prepare email to send',
         'cancelurl': '../',
     })
 
