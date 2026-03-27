@@ -1,6 +1,6 @@
 Hello!
 
-A refund of {{currency_abbrev}} {{refund.fullamount}} of the invoice:
+A refund of {{refund.fullamount|format_currency}} of the invoice:
 
 Invoice #{{invoice.id}}: {{invoice.title}}
 
