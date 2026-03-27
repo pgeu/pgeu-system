@@ -73,6 +73,8 @@ class InvoiceRefund(models.Model):
 
     refund_pdf = models.TextField(blank=True, null=False)
 
+    _safe_attributes = ('amount', 'vatamount', 'vatrate', 'registered', 'issued', 'completed', 'fullamount')
+
     class Meta:
         ordering = ('id', )
 
