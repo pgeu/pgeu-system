@@ -1,7 +1,7 @@
 {%extends "confreg/confadmin_base.html"%}
 {%block title%}Send email to signup: {{signup.title}}{%endblock%}
 {%block layoutblock%}
-<h1>Signup - send mail</h1>
+<h1>Signup - send email</h1>
 
 <form method="post" action="." class="form-horizontal">{%csrf_token%}
 {%include "confreg/admin_backend_form_content.html" with savebutton="Prepare email to send"%}
