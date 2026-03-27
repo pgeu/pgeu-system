@@ -157,9 +157,11 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                 # then allow them and nothing else.
                 if hasattr(obj, '_safe_attributes'):
                     if attr not in getattr(obj, '_safe_attributes'):
+                        print("Attempt to access unsafe attribute {}.{} from jinja template".format(modname, attr))
                         return False
                 else:
                     # No safe attributes specified, so assume none
+                    print("Attempt to access unsafe attribute {}.{} from jinja template (no safe attributes listed)".format(modname, attr))
                     return False
 
             # Some objects in the confreg model are not safe, because
@@ -171,6 +173,7 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                 # Has a conference, but we can still specify unsafe ones
                 if hasattr(obj, '_unsafe_attributes'):
                     if attr in getattr(obj, '_unsafe_attributes'):
+                        print("Attempt to access explicitly unsafe attribute {}.{} from jinja template".format(modname, attr))
                         return False
             except FieldDoesNotExist:
                 # No conference field on this model. If it has a list of safe attributes, allow the field
@@ -179,12 +182,14 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
                     # If the object lists a number of safe attributes,
                     # then allow them and nothing else.
                     if attr not in getattr(obj, '_safe_attributes'):
+                        print("Attempt to access unsafe attribute {}.{} from jinja template".format(modname, attr))
                         return False
                 else:
                     return False
         elif modname == 'postgresqleu.invoices.util' and obj.__class__.__name__ == 'InvoicePresentationWrapper':
             # This is ugly, but we special-case the invoice information
             if attr in obj._unsafe_attributes:
+                print("Attempt to access explicitly unsafe attribute {}.{} from jinja template".format(modname, attr))
                 return False
 
         return super(ConfSandbox, self).is_safe_attribute(obj, attr, value)
