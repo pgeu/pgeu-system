@@ -208,6 +208,8 @@ class Conference(models.Model):
     checkinprocessors = models.ManyToManyField('ConferenceRegistration', blank=True, related_name="checkinprocessors_set", verbose_name="Check-in processors", help_text="Users who process checkins")
     asktshirt = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: t-shirt", help_text="Include field for T-shirt size")
     askfood = models.BooleanField(blank=False, null=False, default=True, verbose_name="Field: dietary", help_text="Include field for dietary needs")
+    askcountry = models.BooleanField(null=False, blank=False, default=True, verbose_name="Field: country", help_text="Include field for country")
+    askcity = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: city", help_text="Include field for city")
     asktwitter = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: twitter name", help_text="Include field for twitter name")
     asknick = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: nick", help_text="Include field for nick")
     askpronouns = models.BooleanField(null=False, blank=False, default=False, verbose_name="Field: pronouns", help_text="Include fields for pronouns")
@@ -258,7 +260,7 @@ class Conference(models.Model):
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'startdate', 'enddate',
-                        'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'asktwitter', 'asknick', 'askpronouns',
+                        'askfood', 'askbadgescan', 'askshareemail', 'asktshirt', 'askcountry', 'askcity', 'asktwitter', 'asknick', 'askpronouns',
                         'callforpapersopen', 'callforpaperstimerange', 'IsCallForPapersOpen',
                         'callforpaperstags', 'callforpapersrecording', 'allowedit',
                         'conferencefeedbackopen', 'confurl', 'contactaddr', 'tickets',
@@ -352,6 +354,10 @@ class Conference(models.Model):
             yield 'photoconsent'
         if not self.askfood:
             yield 'dietary'
+        if not self.askcountry:
+            yield 'country'
+        if not self.askcity:
+            yield 'city'
 
     @property
     def pending_session_notifications(self):
@@ -639,6 +645,7 @@ class ConferenceRegistration(models.Model):
     email = LowercaseEmailField(null=False, blank=False, verbose_name="E-mail address")
     company = models.CharField(max_length=100, null=False, blank=True, verbose_name="Company")
     address = models.TextField(max_length=200, null=False, blank=True, verbose_name="Address")
+    city = models.CharField(max_length=100, null=False, blank=True, verbose_name="City")
     country = models.ForeignKey(Country, null=True, blank=True, verbose_name="Country", on_delete=models.CASCADE)
     phone = models.CharField(max_length=100, null=False, blank=True, verbose_name="Phone number")
     shirtsize = models.ForeignKey(ShirtSize, null=True, blank=True, verbose_name="Preferred T-shirt size", on_delete=models.CASCADE)
@@ -955,7 +962,7 @@ class ConferenceRegistration(models.Model):
 
     # For exporting "safe attributes" to external systems
     def safe_export(self):
-        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'pronouns', 'pronounstext', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', 'vouchercode', 'is_talkvoter', 'is_volunteer', 'is_admin']
+        attribs = ['firstname', 'lastname', 'email', 'company', 'address', 'city', 'country', 'countryname', 'phone', 'shirtsize', 'dietary', 'twittername', 'nick', 'pronouns', 'pronounstext', 'badgescan', 'shareemail', 'fullidtoken', 'fullpublictoken', 'queuepartition', 'alldays', 'regdatestr', 'vouchercode', 'is_talkvoter', 'is_volunteer', 'is_admin']
         d = dict((a, getattr(self, a) and str(getattr(self, a))) for a in attribs)
         if self.regtype:
             d['regtype'] = self.regtype.safe_export()

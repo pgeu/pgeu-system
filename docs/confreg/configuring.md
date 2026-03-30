@@ -193,6 +193,15 @@ Field dietary
 : Should the field asking for dietary needs be displayed on the
 registration form. Only used if catering is provided.
 
+Field country
+: Should the field asking for country be displayed on the
+registration form. This uses the country lookup table and includes
+the *Prefer not to say* option.
+
+Field city
+: Should the field asking for city be displayed on the registration
+form. This is a free-text field.
+
 Field nick
 : Should the field asking for nickname be displayed on the
 registration form.
@@ -362,4 +371,3 @@ conference templates in which case this has no effect.
 Vertical pixels per minute
 : Number of pixels to assign to each minute on the Y axis when
 generating the "old style" HTML schedule.
-
