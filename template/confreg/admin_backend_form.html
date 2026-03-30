@@ -96,6 +96,7 @@ function _do_update_markdown(obj) {
 {%if form.dynamic_preview_fields%}
 function backend_dynamic_preview(id) {
    var e = $('#id_' + id);
+   const csrf = e.closest('form').children('input[name="csrfmiddlewaretoken"]').val();
 
    var w = $('<div class="admin_dynamicpreview"><legend>Preview</legend><div class="admin_dynamicpreview_contents"></div></div>').insertAfter(e);
    var p = w.find('div.admin_dynamicpreview_contents');
@@ -106,9 +107,10 @@ function backend_dynamic_preview(id) {
           return [f, $('#id_' + f).val()]
       })) : {};
 
-      $.get(document.location, {
+      $.post(document.location, {
           'fieldpreview': id,
           'previewval': e.val(),
+          'csrfmiddlewaretoken': csrf,
           ...extrafields,
       }, function(v) {
          p.text(v);

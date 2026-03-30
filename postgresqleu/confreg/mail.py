@@ -163,15 +163,15 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
 
         provider = providerclass(conference, request.GET['idlist'].split(','))
 
-    if request.method == 'GET' and 'fieldpreview' in request.GET:
-        if request.GET['fieldpreview'] != 'message':
+    if request.method == 'POST' and 'fieldpreview' in request.POST:
+        if request.POST['fieldpreview'] != 'message':
             raise Http404()
 
         try:
             context = provider.get_preview_context()
 
             return HttpResponse(render_sandboxed_template(
-                request.GET['previewval'], context,
+                request.POST['previewval'], context,
             ))
         except Exception as e:
             return HttpResponse("Failed to render template: {}".format(e))

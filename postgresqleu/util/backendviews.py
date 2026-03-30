@@ -24,13 +24,13 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
     if not formclass.Meta.fields:
         raise Exception("This view only works if fields are explicitly listed")
 
-    if request.GET.get('fieldpreview', ''):
-        f = request.GET.get('fieldpreview')
+    if request.method == 'POST' and request.POST.get('fieldpreview', ''):
+        f = request.POST.get('fieldpreview')
         if f not in formclass.dynamic_preview_fields:
             raise Http404()
 
         try:
-            return HttpResponse(formclass.get_dynamic_preview(f, request.GET.get('previewval', ''), id), content_type='text/plain')
+            return HttpResponse(formclass.get_dynamic_preview(f, request.POST.get('previewval', ''), id), content_type='text/plain')
         except Exception as e:
             return HttpResponse('Error getting preview: {}'.format(e), content_type='text/plain')
 

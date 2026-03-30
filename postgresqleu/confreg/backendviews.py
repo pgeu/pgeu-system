@@ -775,9 +775,9 @@ def tweetcampaign(request, urlname, typeid):
 
     campaign = get_campaign_from_id(typeid)
 
-    if request.method == 'GET' and 'fieldpreview' in request.GET:
+    if request.method == 'POST' and 'fieldpreview' in request.POST:
         try:
-            return campaign.get_dynamic_preview(conference, request.GET['fieldpreview'], request.GET['previewval'])
+            return campaign.get_dynamic_preview(conference, request.POST['fieldpreview'], request.POST['previewval'])
         except Exception as e:
             return HttpResponse('Exception rendering preview: {}'.format(e), content_type='text/plain', status=400)
 

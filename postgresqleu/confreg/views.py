@@ -5050,11 +5050,11 @@ def crossmail_send(request):
             'token': 'abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567abcd1234efgh4567',
         })
 
-    if request.method == 'GET' and 'fieldpreview' in request.GET:
-        if request.GET['fieldpreview'] != 'text':
+    if request.method == 'POST' and 'fieldpreview' in request.POST:
+        if request.POST['fieldpreview'] != 'text':
             raise Http404()
 
-        return HttpResponse(_get_preview_text(request.GET['previewval']))
+        return HttpResponse(_get_preview_text(request.POST['previewval']))
 
     def _get_recipients_for_crossmail(postdict):
         def _get_one_filter(conf, filt, optout_filter=False):
