@@ -128,15 +128,13 @@ class GroupedIterator(forms.models.ModelChoiceIterator):
         super().__init__(field)
 
     def __iter__(self):
-        for group, choices in groupby(self.queryset, self.groupby):
+        for group, choices in groupby(self.queryset.all().order_by(self.groupby, *self.field.orderby), attrgetter(self.groupby)):
             yield (group,
                    [self.choice(c) for c in choices])
 
 
 class GroupedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
     def __init__(self, *args, groupfield, **kwargs):
-        if isinstance(groupfield, str):
-            groupfield = attrgetter(groupfield)
         self.iterator = partial(GroupedIterator, groupby=groupfield)
         self.groupfield = groupfield
         super().__init__(*args, **kwargs)
