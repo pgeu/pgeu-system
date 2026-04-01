@@ -196,11 +196,19 @@ registration form. Only used if catering is provided.
 Field country
 : Should the field asking for country be displayed on the
 registration form. This uses the country lookup table and includes
-the *Prefer not to say* option.
+the *Prefer not to say* option. This value is collected separately and
+is not appended to the invoice address.
 
 Field city
 : Should the field asking for city be displayed on the registration
-form. This is a free-text field.
+form. This is a free-text field. This value is collected separately
+and is not appended to the invoice address.
+
+Invoice recipient address
+: The invoice recipient address is built from the registration
+*Company* and *Address* fields only. Attendees should include all
+required address parts (city, postal code, country, etc.) in the
+Address field.
 
 Field nick
 : Should the field asking for nickname be displayed on the

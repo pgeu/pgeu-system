@@ -18,6 +18,10 @@ The details below will be included on your invoice, as entered on your
 registration. If this is in any way incorrect, please contact
 <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a>.
 </p>
+<p>
+The invoice recipient address is built from the Company and Address fields only.
+Please include city, postal code, and country in the Address field as needed.
+</p>
 
 <form method="post" action="." class="pgeuregformconfirm">{{ csrf_input }}
 {%for o in options%}
@@ -29,7 +33,6 @@ registration. If this is in any way incorrect, please contact
 {{reg.firstname}} {{reg.lastname}}<br/>
 {%if reg.company%}{{reg.company}}<br/>{%endif%}
 {{"<br>".join(reg.address.splitlines())}}<br/>
-{{reg.countryname}}<br/>
 </div>
 </fieldset>
 

@@ -101,6 +101,8 @@ class BackendConferenceForm(BackendForm):
         self.fields['notifyregs'].help_text = 'Notifications will be sent to {} whenever someone registers or cancels.'.format(self.conference.notifyaddr)
         self.fields['notifysessionstatus'].help_text = 'Notifications will be sent to {} whenever a speaker confirms a session.'.format(self.conference.notifyaddr)
         self.fields['notifyvolunteerstatus'].help_text = 'Notifications will be sent to {} whenever a volunteer makes changes to a slot.'.format(self.conference.notifyaddr)
+        self.fields['askcountry'].help_text = 'Include field for country on the registration form. This field is collected separately and is not appended to invoice addresses.'
+        self.fields['askcity'].help_text = 'Include free-text field for city on the registration form. This field is collected separately and is not appended to invoice addresses.'
 
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'transfer_cost', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},

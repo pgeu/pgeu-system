@@ -62,10 +62,28 @@ class ConferenceRegistrationForm(forms.ModelForm):
         if 'country' in self.fields:
             self.fields['country'].choices = self._get_country_choices()
 
+        self.fields['address'].help_text = (
+            'Used for invoices. Include city, postal code, and country here as needed.'
+        )
+
+        if 'city' in self.fields:
+            self.fields['city'].help_text = 'Used for conference statistics.'
+        elif 'country' in self.fields:
+            self.fields['country'].help_text = 'Used for conference statistics.'
+
         if not self.regforother:
-            self.intro_html = mark_safe('<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
+            self.intro_html = mark_safe(
+                '<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(
+                    escape(self.user.username),
+                    escape(self.user.first_name),
+                    escape(self.user.last_name),
+                    escape(self.user.email),
+                )
+            )
         else:
-            self.intro_html = mark_safe('<p>You are currently editing a registration for somebody other than yourself.</p>')
+            self.intro_html = mark_safe(
+                '<p>You are currently editing a registration for somebody other than yourself.</p>'
+            )
 
     def _get_country_choices(self):
         yield (None, 'Prefer not to say')
