@@ -858,18 +858,22 @@ ORDER BY num DESC NULLS LAST, title
     'queuepartitions': QueuePartitionForm,
 
     'attendeespendingpolicy': """SELECT
-   lastname AS "Last name",
-   firstname AS "First name",
+   r.lastname AS "Last name",
+   r.firstname AS "First name",
    regtype AS "Registration type",
-   COALESCE(c.printable_name, $$Unspecified$$) AS "Country"
+   COALESCE(c.printable_name, $$Unspecified$$) AS "Country",
+   r.checkedinat AS "Checked in at",
+   checkinuser.username AS "Checked in by"
 FROM confreg_conferenceregistration r
 INNER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
 LEFT JOIN country c ON c.iso=r.country_id
+LEFT JOIN confreg_conferenceregistration checkedinby ON r.checkedinby_id=checkedinby.id
+LEFT JOIN auth_user checkinuser ON checkedinby.attendee_id=checkinuser.id
 WHERE r.conference_id=%(confid)s AND
-      payconfirmedat IS NOT NULL AND
-      canceledat IS NULL AND
-      policyconfirmedat IS NULL
-ORDER BY lastname, firstname""",
+      r.payconfirmedat IS NOT NULL AND
+      r.canceledat IS NULL AND
+      r.policyconfirmedat IS NULL
+ORDER BY r.lastname, r.firstname""",
 
     'attendeesnotcheckedin': """SELECT
    lastname AS "Last name",
