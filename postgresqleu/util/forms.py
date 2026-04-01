@@ -3,7 +3,6 @@ from django.forms import ValidationError
 from django.core.signing import Signer, BadSignature
 from django.contrib.postgres.fields import ArrayField
 from django.forms.widgets import FILE_INPUT_CONTRADICTION
-from django.utils.choices import CallableChoiceIterator
 import django.db.models.base
 
 import pickle
@@ -214,7 +213,7 @@ class SelectSetValueField(forms.ChoiceField):
         setvaluefield = kwargs.pop('setvaluefield')
         self.__choices = kwargs.pop('choices')
         if callable(self.__choices):
-            self.__choices = CallableChoiceIterator(self.__choices)
+            self.__choices = list(self.__choices())
         else:
             self.__choices = list(self.__choices)
 
