@@ -1662,8 +1662,9 @@ class BackendTweetQueueErrorLogManager:
     can_add = False
 
     def get_list(self, instance):
-        for e in ConferenceTweetQueueErrorLog.objects.filter(tweet=instance):
-            yield None, e.ts, e.message
+        if instance.pk:
+            for e in ConferenceTweetQueueErrorLog.objects.filter(tweet=instance):
+                yield None, e.ts, e.message
 
 
 class BackendTweetQueueForm(BackendForm):
