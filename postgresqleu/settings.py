@@ -53,6 +53,8 @@ USE_I18N = False
 
 # Turn off locale aware timestamp format, as we handle that ourselves
 USE_L10N = False
+# Django 5+ now requires a module to do the same thing
+FORMAT_MODULE_PATH = "postgresqleu.util.formats"
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -251,6 +253,7 @@ SITEBASE = "http://localhost:8000"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+# Note! Keep datetime formats in sync with postgresqleu/formats/en/formats.py
 DATETIME_FORMAT = "Y-m-d H:i:s"
 DATE_FORMAT = "Y-m-d"
 TIME_FORMAT = "H:i:s"
