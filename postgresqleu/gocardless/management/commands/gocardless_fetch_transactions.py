@@ -5,7 +5,6 @@
 
 from django.core.management.base import BaseCommand
 from django.utils.dateparse import parse_date, parse_datetime
-from django.utils.timezone import make_aware
 from django.db import transaction
 from django.conf import settings
 
