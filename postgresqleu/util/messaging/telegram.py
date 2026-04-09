@@ -1,7 +1,6 @@
 from django.core.validators import ValidationError
 from django import forms
 from django.http import HttpResponse
-from django.utils import timezone
 from django.contrib import messages
 from django.conf import settings
 import django.utils.timezone
@@ -11,7 +10,7 @@ import io
 import json
 import re
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 
 from postgresqleu.util.random import generate_random_token
 from postgresqleu.util.forms import SubmitButtonField
@@ -271,9 +270,9 @@ class Telegram(object):
                 self.process_incoming_chat_structure(u)
 
         if res:
-            return timezone.now(), max((u['update_id'] for u in res))
+            return django.utils.timezone.now(), max((u['update_id'] for u in res))
         else:
-            return timezone.now(), checkpoint
+            return django.utils.timezone.now(), checkpoint
 
     def process_webhook(self, request):
         body = request.body.decode('utf8', errors='ignore')
@@ -379,7 +378,7 @@ class Telegram(object):
         msg = IncomingDirectMessage(
             provider_id=self.providerid,
             postid=msgid,
-            time=datetime.fromtimestamp(int(u['message']['date']), tz=django.utils.timezone.utc),
+            time=datetime.fromtimestamp(int(u['message']['date']), tz=timezone.utc),
             sender={
                 'username': u['message']['from']['username'],
                 'userid': u['message']['from']['id'],

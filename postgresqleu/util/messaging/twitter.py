@@ -4,10 +4,9 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
-import django.utils.timezone
 
 import requests_oauthlib
-from datetime import datetime
+from datetime import datetime, timezone
 import dateutil.parser
 import hmac
 import hashlib
@@ -388,7 +387,7 @@ class Twitter(object):
             j = r.json()
 
             for e in j['events']:
-                dt = datetime.fromtimestamp(int(e['created_timestamp']) / 1000, tz=django.utils.timezone.utc)
+                dt = datetime.fromtimestamp(int(e['created_timestamp']) / 1000, tz=timezone.utc)
                 if dt < lastpoll:
                     break
                 highdt = max(dt, highdt)
@@ -655,7 +654,7 @@ def process_twitter_webhook(request):
                 sender = int(dme['message_create']['sender_id'])
                 mp, tw = _get_messaging_from_uid(recipient)
                 if tw:
-                    dt = datetime.fromtimestamp(int(dme['created_timestamp']) / 1000, tz=django.utils.timezone.utc)
+                    dt = datetime.fromtimestamp(int(dme['created_timestamp']) / 1000, tz=timezone.utc)
                     tw.process_incoming_message_create_struct(dme['id'], dt, dme['message_create'])
                 else:
                     log.error("Could not find provider for direct message event: {}".format(dme))
