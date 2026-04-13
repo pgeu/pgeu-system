@@ -206,9 +206,9 @@ and is not appended to the invoice address.
 
 Invoice recipient address
 : The invoice recipient address is built from the registration
-*Company* and *Address* fields only. Attendees should include all
+*Company* and *Invoice address* fields only. Attendees should include all
 required address parts (city, postal code, country, etc.) in the
-Address field.
+Invoice address field.
 
 Field nick
 : Should the field asking for nickname be displayed on the

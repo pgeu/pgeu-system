@@ -62,14 +62,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
         if 'country' in self.fields:
             self.fields['country'].choices = self._get_country_choices()
 
-        self.fields['address'].help_text = (
-            'Used for invoices. Include city, postal code, and country here as needed.'
-        )
-
-        if 'city' in self.fields:
-            self.fields['city'].help_text = 'Used for conference statistics.'
-        elif 'country' in self.fields:
-            self.fields['country'].help_text = 'Used for conference statistics.'
+        self.fields['address'].label = 'Invoice address'
+        if 'badgescan' in self.fields:
+            self.fields['badgescan'].label = (
+                'Allow sponsors get contact information '
+                '(name, e-mail address, city/country and company name) by scanning badge'
+            )
 
         if not self.regforother:
             self.intro_html = mark_safe(
@@ -308,7 +306,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
         # Return a set of fields used for our rendering
         conf = self.instance.conference
 
-        fields = ['regtype', 'firstname', 'lastname', 'company', 'address', 'email']
+        fields = ['regtype', 'firstname', 'lastname', 'email']
         if conf.askcity:
             fields.append('city')
         if conf.askcountry:
@@ -324,6 +322,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
                'introhtml': self.intro_html,
                'fields': [self[x] for x in fields],
                }
+
+        yield {
+            'id': 'invoice_information',
+            'legend': 'Invoice information',
+            'fields': [self['company'], self['address']],
+        }
 
         if conf.asktshirt or conf.askfood or conf.askshareemail:
             fields = []
@@ -371,6 +375,11 @@ class RegistrationChangeForm(forms.ModelForm):
         for f in self.instance.conference.remove_fields:
             if f in self.fields:
                 del self.fields[f]
+        if 'badgescan' in self.fields:
+            self.fields['badgescan'].label = (
+                'Allow sponsors get contact information '
+                '(name, e-mail address, city/country and company name) by scanning badge'
+            )
         if not self.allowedit:
             for f in self.fields:
                 if f not in self.Meta.unlocked_fields:
