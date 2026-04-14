@@ -2551,7 +2551,7 @@ def waitlist_signup(request, confname):
             reg.firstname,
             reg.lastname,
             reg.email,
-            '/events/admin/{}/waitlist/'.format(confname),
+            '{}/events/admin/{}/waitlist/'.format(settings.SITEBASE, confname),
         ),
     )
 
