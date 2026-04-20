@@ -1781,7 +1781,7 @@ def sponsor_admin_refund(request, confurlname, sponsorid):
                             b.save()
                             oplog.write(" * Prepaid batch {} unassigned, but vouchers *NOT* deleted.\n".format(b.id))
 
-                        for c in DiscountCode.objects.filter(sponsor=sponsor):
+                        for d in DiscountCode.objects.filter(sponsor=sponsor):
                             d.sponsor = None
                             d.save()
                             oplog.write(" * Discount code {} unassigned, but usage *NOT* deleted.\n".format(d.code))
