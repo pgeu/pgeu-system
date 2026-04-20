@@ -242,7 +242,13 @@ class SponsorRefundForm(forms.Form):
     def __init__(self, invoice, *args, **kwargs):
         self.invoice = invoice
         super().__init__(*args, **kwargs)
-        if not invoice.total_vat:
+        if not invoice:
+            self.fields['refundamount'].choices = (
+                (2, "Don't refund (no invoice)"),
+            )
+            del self.fields['customrefundamount']
+            del self.fields['customrefundamountvat']
+        elif not invoice.total_vat:
             self.fields['customrefundamount'].label = 'Custom refund amount'
             del self.fields['customrefundamountvat']
 
@@ -251,6 +257,7 @@ class SponsorRefundForm(forms.Form):
 
     def clean(self):
         d = super().clean()
+
         if int(d['refundamount']) == 1:
             # Custom amount, so make sure both those fields are set
             if d['customrefundamount'] is None:
@@ -260,9 +267,9 @@ class SponsorRefundForm(forms.Form):
             if self.invoice.total_vat and d['customrefundamountvat'] is None:
                 self.add_error('customrefundamountvat', 'This field is required when doing custom amount refund')
         else:
-            if d['customrefundamount'] is not None:
+            if self.invoice and d['customrefundamount'] is not None:
                 self.add_error('customrefundamount', 'This field must be left empty when doing non-custom refund')
-            if self.invoice.total_vat and d['customrefundamountvat'] is not None:
+            if self.invoice and self.invoice.total_vat and d['customrefundamountvat'] is not None:
                 self.add_error('customrefundamountvat', 'This field must be left empty when doing non-custom refund')
 
         return d
