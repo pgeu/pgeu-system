@@ -191,6 +191,9 @@ class ConfSandbox(jinja2.sandbox.SandboxedEnvironment):
             if attr in obj._unsafe_attributes:
                 print("Attempt to access explicitly unsafe attribute {}.{} from jinja template".format(modname, attr))
                 return False
+        elif modname.endswith('models'):
+            print("Attempt to access 'models' {} for attribute {} outside postgresqleu namespace".format(modname, attr))
+            return False
 
         return super(ConfSandbox, self).is_safe_attribute(obj, attr, value)
 
