@@ -140,6 +140,7 @@ FOR UPDATE OF confreg_conferencetweetqueue"""))
                     except Exception as e:
                         errmsg = "Exception: {}".format(e)
                         id = None
+                        tryagain = True
 
                     if id:
                         t.remainingtosend.remove(p)
