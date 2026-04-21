@@ -63,7 +63,7 @@ class LinkedinBackendForm(BackendSeriesMessagingForm):
             refreshtokenexpires = timezone.make_aware(datetime.fromtimestamp(self.instance.config.get('refresh_token_expires')))
 
             self.initial.update({
-                'linkedininfo': 'Connected to Linkedin account.<br/>Current access token will expire in {} (on {}), and will be automatically renewed until {}, after which it must be manually re-authenticated.<br/>To re-athenticate, click <a href="{}">this link</a> and log in with a Linkedin account with the appropriate permissions.'.format(
+                'linkedininfo': 'Connected to Linkedin account.<br/>Current access token will expire in {} (on {}), and will be automatically renewed until {}, after which it must be manually re-authenticated.<br/>To re-authenticate, click <a href="{}">this link</a> and log in with a Linkedin account with the appropriate permissions.'.format(
                     timeuntil(tokenexpires),
                     datetime_string(tokenexpires),
                     datetime_string(refreshtokenexpires),
