@@ -117,7 +117,8 @@ FOR UPDATE OF confreg_conferencetweetqueue"""))
             remaining = list(t.remainingtosend.select_for_update().all())
             if not remaining:
                 # Nothing remaining for this tweet, so flag it as done. Normally this shouldn't happen,'
-                # but it can happen if news is posted prior to the twitter account being enabled.
+                # but it can happen if news is posted prior to the twitter account being enabled, or
+                # if we gave up prematurely on a provider.
                 t.sent = True
                 t.save(update_fields=['sent', ])
                 break
@@ -128,7 +129,7 @@ FOR UPDATE OF confreg_conferencetweetqueue"""))
                 # Don't try to post it if it's empty
                 if contents:
                     try:
-                        (id, errmsg) = impl.post(
+                        (id, errmsg, tryagain) = impl.post(
                             truncate_shortened_post(
                                 contents,
                                 impl.max_post_length
@@ -147,8 +148,13 @@ FOR UPDATE OF confreg_conferencetweetqueue"""))
                         t.postids[id] = p.id
                         sentany = True
                     else:
-                        sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
-                        ConferenceTweetQueueErrorLog(tweet=t, message="Failed to post to {}: {}".format(p, errmsg)[:250]).save()
+                        if tryagain:
+                            sys.stderr.write("Failed to post to {}: {}\n".format(p, errmsg))
+                            ConferenceTweetQueueErrorLog(tweet=t, message="Failed to post to {}: {}".format(p, errmsg)[:250]).save()
+                        else:
+                            sys.stderr.write("Failed to post to {}: {}. Not trying again.\n".format(p, errmsg))
+                            ConferenceTweetQueueErrorLog(tweet=t, message="Failed to post to {}: {}. Not trying again.".format(p, errmsg)[:250]).save()
+                            t.remainingtosend.remove(p)
                         err = True
                 else:
                     sys.stderr.write("Not making empty post to {}\n".format(p))

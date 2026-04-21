@@ -164,7 +164,7 @@ class Bluesky(object):
                 timeout=30,
             )
             if r.status_code != 200:
-                return (None, 'Image upload: {}'.format(r.text))
+                return (None, 'Image upload: {}'.format(r.text), True)
             post['embed'] = {
                 '$type': 'app.bsky.embed.images',
                 'images': [{'alt': '', 'image': r.json()['blob']}]
@@ -184,9 +184,9 @@ class Bluesky(object):
             return (None, 'Post error: {}, message {}'.format(
                 r.json()['error'],
                 r.json()['message'],
-            ))
+            ), True)
         r.raise_for_status()
-        return (r.json()['uri'], None)
+        return (r.json()['uri'], None, None)
 
     def repost(self, tweetid):
         raise Exception("Not implemented yet")

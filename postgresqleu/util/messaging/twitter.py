@@ -254,7 +254,7 @@ class Twitter(object):
                 'media': bytearray(image),
             }, timeout=30)
             if r.status_code != 200:
-                return (None, 'Media upload: {}'.format(r.text))
+                return (None, 'Media upload: {}'.format(r.text), True)
             d['media'] = {
                 'media_ids': [str(r.json()['media_id']), ]
             }
@@ -262,7 +262,7 @@ class Twitter(object):
         while d['text']:
             r = self.tw.post('https://api.twitter.com/2/tweets', json=d, timeout=30)
             if r.status_code == 201:
-                return (r.json()['data']['id'], None)
+                return (r.json()['data']['id'], None, None)
             else:
                 # Normally Twitter gives us a json result on errors as well, so let's try that first
                 try:
@@ -281,11 +281,11 @@ class Twitter(object):
                             time.sleep(1)
                             continue
                         else:
-                            return (None, "Unable to truncate tweet further, only a single word and Twitter still returns 186!")
+                            return (None, "Unable to truncate tweet further, only a single word and Twitter still returns 186!", False)
                     else:
-                        return (None, r.text)
+                        return (None, r.text, True)
                 except Exception as e:
-                    return (None, "{}\n\nContent was:\n{}".format(str(e), r.text))
+                    return (None, "{}\n\nContent was:\n{}".format(str(e), r.text), True)
 
     def repost(self, tweetid):
         raise Exception("No v2 support for reposts yet - need paid account")
