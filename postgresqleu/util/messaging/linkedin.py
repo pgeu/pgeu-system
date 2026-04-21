@@ -203,10 +203,10 @@ class Linkedin(object):
                 }
             })
             if r.status_code != 200:
-                return (None, 'Failed to initialize image upload: {}'.format(r.text))
+                return (None, 'Failed to initialize image upload (status {}): {}'.format(r.status_code, r.text))
             ir = self.sess.put(r.json()['value']['uploadUrl'], bytearray(image), timeout=60)
             if ir.status_code != 201:
-                return (None, 'Failed to upload image: {}'.format(ir.text))
+                return (None, 'Failed to upload image (status {}): {}'.format(ir.status_code, ir.text))
             # Upload complete, we can use it!
             d['content'] = {
                 'media': {
@@ -215,7 +215,7 @@ class Linkedin(object):
             }
         r = self._post('rest/posts', json=d)
         if r.status_code != 201:
-            return (None, r.text)
+            return (None, 'Failed to post (status {}): {}'.format(r.status_code, r.text))
 
         # Format of id is urn:li:share:7196857142283268096
         return (r.headers['x-linkedin-id'], None)
