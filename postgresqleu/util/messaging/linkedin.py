@@ -203,7 +203,7 @@ class Linkedin(object):
                 }
             })
             if r.status_code != 200:
-                return (None, 'Failed to initialize image upload (status {}): {}'.format(r.status_code, r.text), ir.status_code != 429)
+                return (None, 'Failed to initialize image upload (status {}): {}'.format(r.status_code, r.text), r.status_code != 429)
             ir = self.sess.put(r.json()['value']['uploadUrl'], bytearray(image), timeout=60)
             if ir.status_code != 201:
                 return (None, 'Failed to upload image (status {}): {}'.format(ir.status_code, ir.text), ir.status_code != 429)
