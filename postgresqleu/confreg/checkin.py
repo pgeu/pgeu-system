@@ -363,11 +363,11 @@ def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fie
         else:
             token = request.POST['token']
         reg = get_object_or_404(ConferenceRegistration, conference=conference, payconfirmedat__isnull=False, canceledat__isnull=True, **{tokenfield: token})
-        if reg.checkedinat:
-            return HttpResponse("Already checked in.", status=412)
 
         with transaction.atomic():
-            store(reg, user)
+            status, msg = store(reg, user)
+            if status is not None:
+                return HttpResponse(msg, status=status)
 
         return _json_response({
             'reg': _get_reg_json(reg),
@@ -382,9 +382,13 @@ def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fie
 @global_login_exempt
 def api(request, urlname, regtoken, what):
     def _store(reg, user):
+        if reg.checkedinat:
+            return 412, "Already checked in."
+
         reg.checkedinat = timezone.now()
         reg.checkedinby = user
         reg.save()
+        return None, None
 
     return _checkin_api(
         request, urlname, regtoken, what,
@@ -403,9 +407,13 @@ def api(request, urlname, regtoken, what):
 @global_login_exempt
 def checkin_field_api(request, urlname, regtoken, fieldname, what):
     def _store(reg, user):
+        if not reg.checkedinat:
+            return 412, "Attendee not checked in."
+
         reglog(reg, "Marked scanner field {}".format(fieldname), user.attendee)
         reg.dynaprops[fieldname] = datetime_string(timezone.now())
         reg.save(update_fields=['dynaprops'])
+        return None, None
 
     def _validate(conference):
         if fieldname not in conference.scannerfields_list:
