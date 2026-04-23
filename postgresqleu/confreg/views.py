@@ -1452,6 +1452,10 @@ INNER JOIN confreg_room r ON r.id=t.room_id GROUP BY day
        'attributes', attributes
     ) ORDER BY spk.fullname) FILTER (WHERE spk.id IS NOT NULL), '[]')
     ELSE '{{}}'::json END AS speakers,
+    (SELECT COALESCE(array_agg(tag), '{{}}'::text[]) FROM confreg_conferencesessiontag cst
+     INNER JOIN confreg_conferencesession_tags csts ON csts.conferencesessiontag_id=cst.id
+     WHERE csts.conferencesession_id=s.id
+    ) AS tags,
     s.videolinks
 FROM confreg_conferencesession s
 LEFT JOIN confreg_track t ON t.id=s.track_id
