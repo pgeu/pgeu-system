@@ -104,6 +104,11 @@ import json
 import markdown
 
 
+def _registration_invoice_address(reg):
+    # Invoice recipient address should only come from the invoice-specific fields.
+    return "\n".join(v for v in [reg.company, reg.address] if v)
+
+
 def _get_registration_signups(conference, reg):
     # Left join is hard to do efficiently with the django ORM, so let's do a query instead
     with ensure_conference_timezone(conference) as cursor:
@@ -1158,7 +1163,7 @@ def reg_add_options(request, confname, whatfor=None):
             request.user,
             request.user.email,
             reg.firstname + ' ' + reg.lastname,
-            reg.company + "\n" + reg.address + "\n" + reg.countryname,
+            _registration_invoice_address(reg),
             "%s additional options" % conference.name_and_date,
             timezone.now(),
             timezone.now(),
@@ -2404,7 +2409,7 @@ def confirmreg(request, confname):
                 request.user,
                 request.user.email,
                 reg.firstname + ' ' + reg.lastname,
-                reg.company + "\n" + reg.address + "\n" + reg.countryname,
+                _registration_invoice_address(reg),
                 "%s registration" % conference.name_and_date,
                 timezone.now(),
                 timezone.now(),
@@ -4981,7 +4986,7 @@ def transfer_get_address(request, urlname):
     if request.GET.get('type', None) == 'reg':
         reg = get_object_or_404(ConferenceRegistration, conference=conference, pk=id)
         return HttpResponse(
-            reg.company + "\n" + reg.address + "\n" + reg.countryname,
+            _registration_invoice_address(reg),
             content_type='text/plain',
         )
     elif request.GET.get('type', None) == 'sponsor':

@@ -89,7 +89,7 @@ class BackendConferenceForm(BackendForm):
                   'twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy',
                   'schedulewidth', 'pixelsperminute', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus',
                   'testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors',
-                  'askpronouns', 'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
+                  'askpronouns', 'asktshirt', 'askfood', 'askcountry', 'askcity', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent',
                   'callforpapersmaxsubmissions', 'skill_levels', 'showvotes', 'scoring_method', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields',
@@ -101,13 +101,15 @@ class BackendConferenceForm(BackendForm):
         self.fields['notifyregs'].help_text = 'Notifications will be sent to {} whenever someone registers or cancels.'.format(self.conference.notifyaddr)
         self.fields['notifysessionstatus'].help_text = 'Notifications will be sent to {} whenever a speaker confirms a session.'.format(self.conference.notifyaddr)
         self.fields['notifyvolunteerstatus'].help_text = 'Notifications will be sent to {} whenever a volunteer makes changes to a slot.'.format(self.conference.notifyaddr)
+        self.fields['askcountry'].help_text = 'Include field for country on the registration form. This field is collected separately and is not appended to invoice addresses.'
+        self.fields['askcity'].help_text = 'Include free-text field for city on the registration form. This field is collected separately and is not appended to invoice addresses.'
 
     fieldsets = [
         {'id': 'base_info', 'legend': 'Basic information', 'fields': ['attendees_before_waitlist', 'invoice_autocancel_hours', 'transfer_cost', 'notifyregs', 'notifysessionstatus', 'notifyvolunteerstatus', ]},
         {'id': 'welcomeandreg', 'legend': 'Welcome and registration', 'fields': ['sendwelcomemail', 'tickets', 'confirmpolicy', 'queuepartitioning', 'initial_common_countries']},
         {'id': 'promo', 'legend': 'Website promotion', 'fields': ['promoactive', 'promotext', 'promopicurl']},
         {'id': 'twitter', 'legend': 'Twitter settings', 'fields': ['twitter_timewindow_start', 'twitter_timewindow_end', 'twitter_postpolicy', ]},
-        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['askpronouns', 'asktshirt', 'askfood', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', 'scannerfields', ]},
+        {'id': 'fields', 'legend': 'Registration fields', 'fields': ['askpronouns', 'asktshirt', 'askfood', 'askcountry', 'askcity', 'asknick', 'asktwitter', 'askbadgescan', 'askshareemail', 'askphotoconsent', 'dynafields', 'scannerfields', ]},
         {'id': 'steps', 'legend': 'Steps', 'fields': ['registrationopen', 'registrationtimerange', 'allowedit', 'allowcancel', 'callforpapersopen', 'callforpaperstimerange', 'callforsponsorsopen', 'callforsponsorstimerange', 'scheduleactive', 'tbdinschedule', 'sessionsactive', 'cardsactive', 'checkinactive', 'conferencefeedbackopen', 'feedbackopen']},
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['callforpapersmaxsubmissions', 'skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes', 'scoring_method']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
@@ -334,7 +336,7 @@ class BackendRegistrationForm(BackendForm):
 
     class Meta:
         model = ConferenceRegistration
-        fields = ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone',
+        fields = ['firstname', 'lastname', 'email', 'company', 'address', 'city', 'country', 'phone',
                   'shirtsize', 'dietary', 'pronouns', 'twittername', 'nick', 'badgescan', 'shareemail',
                   'regtype', 'additionaloptions', 'checkinmessage']
 
@@ -365,7 +367,7 @@ class BackendRegistrationForm(BackendForm):
     @property
     def fieldsets(self):
         fs = [
-            {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'country', 'phone', 'twittername', 'nick']},
+            {'id': 'personal_info', 'legend': 'Personal information', 'fields': ['firstname', 'lastname', 'email', 'company', 'address', 'city', 'country', 'phone', 'twittername', 'nick']},
             {'id': 'reg_info', 'legend': 'Registration information', 'fields': ['regtype', 'additionaloptions'] + list(self._get_reginfo_fields())},
             {'id': 'checkin', 'legend': 'Check-in', 'fields': ['checkinmessage']},
         ]
