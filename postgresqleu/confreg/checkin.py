@@ -367,7 +367,7 @@ def _checkin_api(request, urlname, regtoken, what, tokenfield, tokenmatcher, fie
         with transaction.atomic():
             status, msg = store(reg, user)
             if status is not None:
-                return HttpResponse(msg, status=status)
+                return HttpResponse(msg, status=status, content_type='text/plain')
 
         return _json_response({
             'reg': _get_reg_json(reg),
