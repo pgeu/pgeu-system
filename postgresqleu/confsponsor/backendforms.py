@@ -183,7 +183,7 @@ class BackendSponsorshipLevelBenefitForm(BackendForm):
             else:
                 self.instance_benefit_class = None
 
-        self.initial['benefit_class_name'] = self.instance.benefit_class and all_benefits[self.instance.benefit_class]['description'] or ''
+        self.initial['benefit_class_name'] = self.instance.benefit_class and all_benefits[self.instance.benefit_class]['description'] or 'Auto claimed benefit'
 
         self.fields['tweet_template'].validators = [
             JinjaTemplateValidator({
