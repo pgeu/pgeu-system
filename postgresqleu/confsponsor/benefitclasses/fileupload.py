@@ -80,7 +80,7 @@ class FileUploadForm(BaseBenefitForm):
 
 class FileUploadBackendForm(BackendSponsorshipLevelBenefitForm):
     maxsize = forms.IntegerField(label='Maximum size in Kb', initial=1024, validators=[MinValueValidator(10), MaxValueValidator(int(settings.DATA_UPLOAD_MAX_MEMORY_SIZE / 1024))])
-    mimetypes = forms.CharField(label='MIME types', help_text='Allow only the specified MIME types, leave empty to allow all', required=False)
+    mimetypes = forms.CharField(label='MIME types', help_text='Allow only the specified MIME types (separated by comma), leave empty to allow all', required=False)
     acceptzip = forms.BooleanField(label='Accept zip', initial=True, help_text='Accept a ZIP version containing the above list of MIME types', required=False)
 
     class_param_fields = ['maxsize', 'mimetypes', 'acceptzip', ]
