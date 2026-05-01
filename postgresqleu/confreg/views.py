@@ -3634,24 +3634,36 @@ def admin_registration_dashboard(request, urlname):
     if conference.confirmpolicy:
         policyquery = "count(r.id) FILTER (WHERE payconfirmedat IS NOT NULL AND canceledat IS NULL AND policyconfirmedat IS NULL) AS nopolicy,"
         policycolumns = ['Pend. policy', ]
+        policycolumnstr = 'nopolicy,'
     else:
         policyquery = ""
         policycolumns = []
+        policycolumnsstr = ''
 
     # Registrations by reg type
-    curs.execute("""SELECT regtype,
+    curs.execute("""WITH t AS (
+SELECT COALESCE(regtype, '* No type selected') AS regtype,
  count(payconfirmedat) - count(canceledat) AS confirmed,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NOT NULL OR bp.invoice_id IS NOT NULL)) AS invoiced,
  count(r.id) FILTER (WHERE payconfirmedat IS NULL AND (r.invoice_id IS NULL AND bp.invoice_id IS NULL)) AS unconfirmed,
  count(r.id) - count(canceledat) AS total,
  count(canceledat) AS canceled,
- {}
- invoice_autocancel_hours
+ {0}
+ invoice_autocancel_hours,
+ rt.sortkey
 FROM confreg_conferenceregistration r
-RIGHT JOIN confreg_registrationtype rt ON rt.id=r.regtype_id
+FULL OUTER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id AND rt.conference_id={1}
 LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
-WHERE rt.conference_id={}
-GROUP BY rt.id ORDER BY rt.sortkey""".format(policyquery, conference.id))
+WHERE r.conference_id={1}
+GROUP BY rt.id
+UNION ALL
+SELECT regtype, 0, 0, 0, 0, 0, 0, invoice_autocancel_hours, rt2.sortkey
+FROM confreg_registrationtype rt2
+WHERE rt2.conference_id={1} AND NOT EXISTS (SELECT 1 FROM confreg_conferenceregistration r2 WHERE r2.regtype_id=rt2.id AND r2.conference_id={1})
+)
+SELECT regtype, confirmed, invoiced, unconfirmed, total, canceled, {2} invoice_autocancel_hours
+FROM t
+ORDER BY sortkey, regtype""".format(policyquery, conference.id, policycolumnstr))
     tables.append({'title': 'Registration types',
                    'columns': ['Type', 'Confirmed', 'Invoiced', 'Unconfirmed', 'Total', 'Canceled', ] + policycolumns + ['Inv. autoc'],
                    'fixedcols': 1,
