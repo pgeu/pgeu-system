@@ -3638,7 +3638,7 @@ def admin_registration_dashboard(request, urlname):
     else:
         policyquery = ""
         policycolumns = []
-        policycolumnsstr = ''
+        policycolumnstr = ''
 
     # Registrations by reg type
     curs.execute("""WITH t AS (
