@@ -3653,7 +3653,7 @@ SELECT COALESCE(regtype, '* No type selected') AS regtype,
  rt.sortkey
 FROM confreg_conferenceregistration r
 FULL OUTER JOIN confreg_registrationtype rt ON rt.id=r.regtype_id AND rt.conference_id={1}
-LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id
+LEFT JOIN confreg_bulkpayment bp ON bp.id=r.bulkpayment_id AND bp.conference_id={1}
 WHERE r.conference_id={1}
 GROUP BY rt.id
 UNION ALL
