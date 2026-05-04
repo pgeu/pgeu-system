@@ -3636,7 +3636,7 @@ def admin_registration_dashboard(request, urlname):
         policycolumns = ['Pend. policy', ]
         policycolumnstr = 'nopolicy,'
     else:
-        policyquery = ""
+        policyquery = "0,"
         policycolumns = []
         policycolumnstr = ''
 
