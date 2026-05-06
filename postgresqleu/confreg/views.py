@@ -2539,7 +2539,9 @@ def waitlist_signup(request, confname):
         return HttpResponseRedirect("../confirm/")
 
     if hasattr(reg, 'registrationwaitlistentry'):
-        raise Exception("This registration is already on the waitlist")
+        # If we're already on the waitlist, redirect to the confirm page. This can happen
+        # on "contact bounce" clicking.
+        return HttpResponseRedirect("../confirm/")
 
     # Ok, so put this registration on the waitlist
     waitlist = RegistrationWaitlistEntry(registration=reg)
