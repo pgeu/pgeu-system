@@ -84,6 +84,13 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
         co.paymentintent = j['payment_intent']
         co.save()
 
+    # Verify that we actually have an URL. We assume the URL is valid if it is present, but have to check
+    # for if it is missing.
+    if sessionurl is None:
+        StripeLog(message="Received null URL for session {} (id {})".format(co.id, co.sessionid),
+                  paymentmethod=method, error=True).save()
+        return HttpResponse("Missing URL in response from Stripe")
+
     # Redirect to the stripe payment URL
     return HttpResponseRedirect(sessionurl)
 
