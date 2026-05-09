@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.conf import settings
 
+import datetime
 import json
 import hmac
 import hashlib
@@ -49,7 +50,22 @@ def invoicepayment_secret(request, paymentmethod, invoiceid, secret):
                   paymentmethod=method).save()
         r = api.secret('checkout/sessions/{}'.format(co.sessionid))
         sessionurl = r.json()['url']
+        if sessionurl is None:
+            if datetime.datetime.fromtimestamp(r.json()['expires_at']) < datetime.datetime.utcnow():
+                StripeLog(
+                    message="Session {} (id {}) has expired. Deleting and creating a new one.".format(co.id, co.sessionid)
+                ).save()
+            else:
+                StripeLog(
+                    message="Session {} (id {}) is not returning an URL. Deleting and creating a new one, but reason should be investigated!".format(co.id, co.sessionid),
+                    error=True
+                ).save()
+            co.delete()
+            co = None
     except StripeCheckout.DoesNotExist:
+        co = None
+
+    if co is None:
         # Create a new checkout session
         co = StripeCheckout(createdat=timezone.now(),
                             paymentmethod=method,
