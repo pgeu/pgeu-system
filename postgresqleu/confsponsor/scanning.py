@@ -349,7 +349,12 @@ def scanning_api(request, scannertoken, what):
                 scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=r, defaults={'note': request.POST.get('note')})
                 if created:
                     # This would normally never happen anymore as we create the record on search. Only if someone deletes it in between.
-                    return _json_response(attendee, 201)
+                    return _json_response(
+                        r,
+                        201,
+                        request.POST.get('note', ''),
+                        'Attendee {} scan stored successfully'.format(r.fullname),
+                    )
                 else:
                     update = []
                     isfirst = scan.firstscan
