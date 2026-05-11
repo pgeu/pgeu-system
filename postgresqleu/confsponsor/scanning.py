@@ -374,7 +374,7 @@ def scanning_api(request, scannertoken, what):
                         scan.note,
                         'Attendee {} scan stored successfully.'.format(r.fullname) if isfirst else 'Attendee {} has already been stored.{}'.format(
                             r.fullname,
-                            'The note has been updated.' if 'note' in update else '',
+                            ' The note has been updated.' if 'note' in update else '',
                         ),
                     )
         else:
