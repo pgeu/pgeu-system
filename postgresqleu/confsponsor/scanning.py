@@ -346,7 +346,7 @@ def scanning_api(request, scannertoken, what):
                 if isinstance(r, HttpResponse):
                     return r
 
-                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=r, defaults={'note': request.POST.get('note')})
+                scan, created = ScannedAttendee.objects.get_or_create(sponsor=sponsor, scannedby=scanner.scanner, attendee=r, defaults={'note': request.POST.get('note', '')})
                 if created:
                     # This would normally never happen anymore as we create the record on search. Only if someone deletes it in between.
                     return _json_response(
@@ -359,8 +359,8 @@ def scanning_api(request, scannertoken, what):
                     update = []
                     isfirst = scan.firstscan
 
-                    if scan.note != request.POST.get('note'):
-                        scan.note = request.POST.get('note')
+                    if scan.note != request.POST.get('note', ''):
+                        scan.note = request.POST.get('note', '')
                         update.append('note')
 
                     if scan.firstscan:
