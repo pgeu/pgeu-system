@@ -1017,7 +1017,7 @@ class BackendConferenceSessionForm(BackendForm):
         elif cleaned_data.get('endtime') and not cleaned_data.get('starttime'):
             self.add_error('starttime', 'Start time must be specified if end time is!')
         elif cleaned_data.get('starttime') and cleaned_data.get('endtime'):
-            if cleaned_data.get('endtime') < cleaned_data.get('starttime'):
+            if cleaned_data.get('endtime') <= cleaned_data.get('starttime'):
                 self.add_error('endtime', 'End time must be later than start time!')
 
         if cleaned_data.get('cross_schedule') and cleaned_data.get('room'):
