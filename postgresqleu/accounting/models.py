@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from .fyear import fy_start_date, fy_end_date, format_fy_label
+
 
 def nonzero_validator(value):
     if value == 0:
@@ -66,10 +68,22 @@ class Year(models.Model):
     year = models.IntegerField(primary_key=True)
     isopen = models.BooleanField(null=False, blank=False)
 
+    @property
+    def start_date(self):
+        return fy_start_date(self.year)
+
+    @property
+    def end_date(self):
+        return fy_end_date(self.year)
+
+    @property
+    def label(self):
+        return format_fy_label(self.year)
+
     def __str__(self):
         if self.isopen:
-            return "%s *" % self.year
-        return "%s" % self.year
+            return "{} *".format(self.label)
+        return self.label
 
     class Meta:
         ordering = ('-year',)
