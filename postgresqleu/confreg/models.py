@@ -1014,7 +1014,7 @@ class RegistrationTransferPending(models.Model):
 class Track(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     trackname = models.CharField(max_length=100, null=False, blank=False, verbose_name="Track name")
-    color = models.CharField(max_length=20, null=False, blank=True, validators=[color_validator, ], verbose_name="Background color")
+    color = models.CharField(max_length=20, null=False, blank=True, validators=[color_validator, ], verbose_name="Background color", default='#ffffff')
     fgcolor = models.CharField(max_length=20, null=False, blank=False, validators=[color_validator, ], verbose_name="Foreground color", default='#000000')
     sortkey = models.IntegerField(null=False, default=100, blank=False)
     incfp = models.BooleanField(null=False, default=False, blank=False, verbose_name="In call for papers")
