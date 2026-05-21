@@ -1225,7 +1225,7 @@ class ConferenceSession(models.Model):
     submissionnote = models.TextField(null=False, blank=True, verbose_name="Submission notes")
     internalnote = models.TextField(null=False, blank=True, verbose_name="Internal notes")
     initialsubmit = models.DateTimeField(null=True, blank=True, verbose_name="Submitted")
-    recordingconsent = models.BooleanField(null=False, blank=False, default=False, verbose_name="Consent to recording")
+    recordingconsent = models.BooleanField(null=False, blank=False, verbose_name="Consent to recording")
     tentativescheduleslot = models.ForeignKey(ConferenceSessionScheduleSlot, null=True, blank=True, on_delete=models.CASCADE)
     tentativeroom = models.ForeignKey(Room, null=True, blank=True, related_name='tentativeroom', on_delete=models.CASCADE)
     lastmodified = models.DateTimeField(auto_now=True, null=False, blank=False)
