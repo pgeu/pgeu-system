@@ -3,6 +3,30 @@ import io
 from PIL import Image, ImageFile
 
 
+# EXIF Orientation tag values mapped to PIL transpose ops (1 = normal, omitted).
+_EXIF_ORIENTATION_OPS = {
+    2: Image.FLIP_LEFT_RIGHT,
+    3: Image.ROTATE_180,
+    4: Image.FLIP_TOP_BOTTOM,
+    5: Image.TRANSPOSE,
+    6: Image.ROTATE_270,
+    7: Image.TRANSVERSE,
+    8: Image.ROTATE_90,
+}
+
+
+# Bake EXIF orientation into pixel data; PIL does not auto-rotate on open.
+def apply_exif_orientation(img):
+    try:
+        exif = img._getexif()
+    except (AttributeError, KeyError, IndexError, TypeError):
+        return img
+    if not exif:
+        return img
+    op = _EXIF_ORIENTATION_OPS.get(exif.get(274))
+    return img.transpose(op) if op is not None else img
+
+
 # Rescale an image in the form of bytes to a new set of bytes
 # in the same format. Assumes the aspect is correct and that
 # the incoming data is valid (it's expected to be for example
@@ -17,6 +41,8 @@ def rescale_image_bytes(origbytes, resolution):
 
 
 def rescale_image(img, resolution, centered=False):
+    fmt = img.format  # transpose returns a new image with .format = None
+    img = apply_exif_orientation(img)
     scale = min(
         float(resolution[0]) / float(img.size[0]),
         float(resolution[1]) / float(img.size[1]),
@@ -36,7 +62,7 @@ def rescale_image(img, resolution, centered=False):
         ))
         centeredimg.save(saver, format='PNG')
     else:
-        newimg.save(saver, format=img.format)
+        newimg.save(saver, format=fmt)
 
     return saver.getvalue()
 
