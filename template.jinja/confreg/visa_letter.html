@@ -1,0 +1,59 @@
+{%extends "base.html" %}
+{%block title%}Visa Letter Request - {{conference}}{%endblock%}
+{%block content%}
+<h1>Visa Letter Request<span class="confheader"> - {{conference}}</span></h1>
+
+{%if visa_request %}
+<h2>Status</h2>
+<dl>
+ <dt>Submitted</dt><dd>{{ visa_request.created_at|datetimeformat("%Y-%m-%d %H:%M") }}</dd>
+ <dt>Status</dt><dd>{{ visa_request.get_status_display() }}</dd>
+{%if visa_request.reviewed_at %}
+ <dt>Reviewed</dt><dd>{{ visa_request.reviewed_at|datetimeformat("%Y-%m-%d %H:%M") }}</dd>
+{%endif%}
+</dl>
+
+{%if visa_request.status == 'pending' %}
+<p>Your visa letter request has been received and is awaiting review by conference staff.</p>
+{%elif visa_request.status == 'approved' %}
+<p>Your visa letter request has been approved. Conference staff will email the PDF letter to you.</p>
+{%elif visa_request.status == 'rejected' %}
+<p>Your visa letter request was not approved. If you have any questions, please contact the conference organisers at <a href="mailto:{{conference.contactaddr}}">{{conference.contactaddr}}</a>.</p>
+{%elif visa_request.status == 'changes_needed' %}
+<p><b>Conference staff have asked you to update your request before it can be processed.</b></p>
+{%if visa_request.admin_notes %}
+<p><b>Notes from staff:</b></p>
+<blockquote>{{ visa_request.admin_notes }}</blockquote>
+{%endif%}
+<p>Please update the details below and re-submit. Your request will go back to staff for review.</p>
+{%endif%}
+{%endif%}
+
+{%if form %}
+{%if not visa_request %}
+<div class="alert alert-info">
+  <p><b>Important:</b> This form is for requesting an official visa letter to support your visa application. Please ensure all information is accurate as it will appear on the official letter.</p>
+  <p>Visa letters are available to attendees with full payment confirmed, speakers, volunteers, and conference staff.</p>
+</div>
+<p>Provide all details exactly as they appear on your passport.</p>
+{%endif%}
+
+{%if form.errors %}
+<p><b style="color:red;">Please correct the errors below.</b></p>
+{%endif%}
+<form method="post" action=".">{{ csrf_input }}
+<table>
+{%for field in form %}
+ <tr>
+  <th>{{ field.label_tag() }}</th>
+  <td>{{ field.errors }}{{ field }}
+  {%if field.help_text %}<br/><small>{{ field.help_text }}</small>{%endif%}
+  </td>
+ </tr>
+{%endfor%}
+</table>
+<input type="submit" value="{%if visa_request %}Re-submit{%else%}Submit{%endif%} visa letter request">
+</form>
+{%endif%}
+
+{%endblock%}

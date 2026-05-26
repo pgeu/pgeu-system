@@ -255,6 +255,11 @@ class Conference(models.Model):
     key_private = models.TextField(null=False, blank=True, verbose_name="Private RSA key for signatures")
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
 
+    visa_letter_enabled = models.BooleanField(blank=False, null=False, default=False, verbose_name="Visa letters", help_text="Allow eligible attendees to request a visa invitation letter")
+    visa_letter_city = models.CharField(max_length=100, blank=True, null=False, verbose_name="Visa letter city", help_text="City the conference is held in, as it should appear in the visa letter (e.g. \"Berlin\")")
+    visa_letter_country = models.CharField(max_length=100, blank=True, null=False, verbose_name="Visa letter country", help_text="Country the conference is held in, as it should appear in the visa letter (e.g. \"Germany\")")
+    visa_letter_signer = models.TextField(blank=True, null=False, verbose_name="Visa letter signer", help_text="Multi-line text printed below the signature image: name, title, address, phone, email")
+
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'startdate', 'enddate',
@@ -265,7 +270,7 @@ class Conference(models.Model):
                         'confirmpolicy', 'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
                         'series', 'sendwelcomemail', 'scannerfields_list',
-                        'vat_registrations',
+                        'vat_registrations', 'visa_letter_enabled',
     )
 
     def safe_export(self):
@@ -1963,3 +1968,76 @@ class ConferenceRemovedData(models.Model):
             ('urlname', 'description'),
         )
         ordering = ('urlname', 'description')
+
+
+class AttendeeSubmission(models.Model):
+    """Abstract base for per-registration form submissions tied to a conference.
+
+    Concrete subclasses add their own data fields and override purge_personal_data()
+    to either delete the row or null out personal fields, depending on whether any
+    aggregate (e.g. anonymised survey responses) should survive a personal-data purge.
+    """
+    conference = models.ForeignKey(Conference, on_delete=models.CASCADE)
+    registration = models.ForeignKey(ConferenceRegistration, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        ordering = ('-created_at', )
+
+    def purge_personal_data(self):
+        raise NotImplementedError
+
+
+class VisaLetterRequest(AttendeeSubmission):
+    STATUS_PENDING = 'pending'
+    STATUS_CHANGES_NEEDED = 'changes_needed'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = (
+        (STATUS_PENDING, 'Pending review'),
+        (STATUS_CHANGES_NEEDED, 'Changes needed'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    )
+
+    SEX_CHOICES = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    admin_notes = models.TextField(blank=True, null=False, default='', verbose_name="Admin notes")
+    accommodation_covered = models.BooleanField(blank=False, null=False, default=False, verbose_name="Accommodation and travel covered", help_text="Tick if accommodation and travel costs are covered for this attendee; the visa letter will state this.")
+
+    passport_name = models.CharField(max_length=200, verbose_name="Full name on passport")
+    passport_sex = models.CharField(max_length=10, choices=SEX_CHOICES, verbose_name="Sex (as on passport)")
+    date_of_birth = models.DateField(verbose_name="Date of birth")
+    passport_number = models.CharField(max_length=50, verbose_name="Passport number")
+    nationality = models.CharField(max_length=100, verbose_name="Nationality")
+    home_address = models.TextField(verbose_name="Home address")
+    embassy_name = models.CharField(max_length=200, verbose_name="Embassy / consulate name")
+    embassy_address = models.TextField(verbose_name="Embassy / consulate address")
+    entry_date = models.DateField(verbose_name="Planned entry date")
+    exit_date = models.DateField(verbose_name="Planned exit date")
+    accommodation = models.CharField(max_length=200, verbose_name="Accommodation while in country")
+    contact_info = models.CharField(max_length=200, verbose_name="Contact info while in country")
+
+    class Meta(AttendeeSubmission.Meta):
+        unique_together = (('conference', 'registration'), )
+
+    def __str__(self):
+        return '{} ({})'.format(self.registration.fullname, self.get_status_display())
+
+    def _display_registration(self, cache):
+        return self.registration.fullname
+
+    def clean(self):
+        super().clean()
+        if self.entry_date and self.exit_date and self.exit_date <= self.entry_date:
+            raise ValidationError({'exit_date': 'Exit date must be after entry date.'})
+
+    def purge_personal_data(self):
+        self.delete()

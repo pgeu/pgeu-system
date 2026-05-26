@@ -40,6 +40,7 @@ from postgresqleu.confsponsor.benefitclasses import get_benefit_id
 from postgresqleu.confreg.models import Conference, ConferenceRegistration, ConferenceAdditionalOption
 from postgresqleu.confreg.models import RegistrationClass, RegistrationType, RegistrationDay
 from postgresqleu.confreg.models import ConferenceFeedbackQuestion, Speaker
+from postgresqleu.confreg.models import VisaLetterRequest
 from postgresqleu.confreg.models import ConferenceSession, Track, Room, ConferenceSessionTag
 from postgresqleu.confreg.models import ConferenceSessionSlides
 from postgresqleu.confreg.models import ConferenceSessionScheduleSlot, VolunteerSlot
@@ -93,7 +94,8 @@ class BackendConferenceForm(BackendForm):
                   'callforpapersmaxsubmissions', 'skill_levels', 'showvotes', 'scoring_method', 'callforpaperstags', 'callforpapersrecording', 'sendwelcomemail',
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields',
-                  'videoproviders', ]
+                  'videoproviders',
+                  'visa_letter_enabled', 'visa_letter_city', 'visa_letter_country', 'visa_letter_signer', ]
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -112,6 +114,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'callforpapers', 'legend': 'Call for papers', 'fields': ['callforpapersmaxsubmissions', 'skill_levels', 'callforpaperstags', 'callforpapersrecording', 'showvotes', 'scoring_method']},
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', 'videoproviders', ]},
+        {'id': 'visaletters', 'legend': 'Visa letters', 'fields': ['visa_letter_enabled', 'visa_letter_city', 'visa_letter_country', 'visa_letter_signer', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
 
@@ -2027,3 +2030,59 @@ class BackendRegistrationDmForm(django.forms.Form):
         if maxlength:
             self.fields['message'].max_length = maxlength
             self.fields['message'].help_text = 'Maximum message length for this provider is {} characters.'.format(maxlength)
+
+
+class BackendVisaLetterRequestForm(BackendForm):
+    helplink = "visaletters"
+    list_fields = ['registration', 'status', 'created_at']
+    readonly_fields = [
+        'passport_name', 'date_of_birth', 'passport_number', 'nationality', 'home_address',
+        'embassy_name', 'embassy_address',
+        'entry_date', 'exit_date', 'accommodation', 'contact_info',
+    ]
+    exclude_date_validators = ['date_of_birth', 'entry_date', 'exit_date']
+    queryset_select_related = ['registration']
+
+    class Meta:
+        model = VisaLetterRequest
+        fields = [
+            'registration',
+            'passport_name', 'passport_sex', 'date_of_birth', 'passport_number', 'nationality', 'home_address',
+            'embassy_name', 'embassy_address',
+            'entry_date', 'exit_date', 'accommodation', 'contact_info',
+            'status', 'admin_notes', 'accommodation_covered',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['registration'].disabled = True
+        self.fields['passport_sex'].disabled = True
+        if self.instance.pk and self.instance.status == VisaLetterRequest.STATUS_APPROVED:
+            self.extrabuttons = list(self.extrabuttons) + [('Generate PDF', 'generate/')]
+            self.formnote = (
+                '<dialog id="visa-pdf-dialog" style="max-width:32em;padding:1.5em;border:1px solid #888;">'
+                '<h4>Generate visa letter PDF</h4>'
+                '<p><b>The signature image is NOT saved on the server.</b> '
+                'It is held in memory only long enough to render the PDF and is then discarded. '
+                'You must upload it every time you generate a PDF for any attendee.</p>'
+                '<p><label>Signature image (PNG or JPEG, &le; 2&nbsp;MB):<br>'
+                '<input type="file" name="signature" accept="image/png,image/jpeg" required></label></p>'
+                '<p style="text-align:right;">'
+                '<button type="button" onclick="this.closest(\'dialog\').close()">Cancel</button> '
+                '<button type="submit" formaction="generate/" formenctype="multipart/form-data" formnovalidate>Generate PDF</button>'
+                '</p>'
+                '</dialog>'
+                '<script>'
+                'document.addEventListener("DOMContentLoaded",function(){'
+                'var d=document.getElementById("visa-pdf-dialog");if(!d)return;'
+                'document.querySelectorAll("a.btn").forEach(function(a){'
+                'if((a.getAttribute("href")||"").endsWith("generate/")){'
+                'a.addEventListener("click",function(e){e.preventDefault();d.showModal();});}});});'
+                '</script>'
+            )
+
+    def save(self, commit=True):
+        if self.instance.pk and 'status' in self.changed_data:
+            self.instance.reviewed_by = self.request.user
+            self.instance.reviewed_at = timezone.now()
+        return super().save(commit=commit)
