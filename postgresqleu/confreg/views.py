@@ -145,6 +145,9 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     if conference.confirmpolicy and not reg.policyconfirmedat:
         return HttpResponseRedirect('{}policy/'.format(redir_root))
 
+    if conference.diversity_survey_enabled and reg.diversity_survey_response is None:
+        return HttpResponseRedirect('{}survey/'.format(redir_root))
+
     mails = _attendeemail_queryset(conference, reg)
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)

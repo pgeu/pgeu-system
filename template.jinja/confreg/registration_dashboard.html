@@ -144,6 +144,18 @@ spamfilters.
    </p>
  </dd>
 {%endif%}
+{%if conference.diversity_survey_enabled and reg.diversity_survey_response is not none %}
+ <dt>Diversity survey</dt>
+ <dd>
+   <p>
+{%if reg.diversity_survey_response %}
+     You have completed the anonymous diversity survey. Thank you!
+{%else %}
+     You chose to skip the anonymous diversity survey. <a href="{{ redir_root }}survey/">Take it now</a> if you've changed your mind.
+{%endif%}
+   </p>
+ </dd>
+{%endif%}
  <dt>Registration details</dt>
  <dd>
    <p>

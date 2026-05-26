@@ -95,7 +95,8 @@ class BackendConferenceForm(BackendForm):
                   'tickets', 'confirmpolicy', 'queuepartitioning', 'invoice_autocancel_hours', 'attendees_before_waitlist',
                   'transfer_cost', 'initial_common_countries', 'jinjaenabled', 'dynafields', 'scannerfields',
                   'videoproviders',
-                  'visa_letter_enabled', 'visa_letter_city', 'visa_letter_country', 'visa_letter_signer', ]
+                  'visa_letter_enabled', 'visa_letter_city', 'visa_letter_country', 'visa_letter_signer',
+                  'diversity_survey_enabled', ]
 
     def fix_fields(self):
         self.selectize_multiple_fields['volunteers'] = RegisteredUsersLookup(self.conference)
@@ -115,6 +116,7 @@ class BackendConferenceForm(BackendForm):
         {'id': 'roles', 'legend': 'Roles', 'fields': ['testers', 'talkvoters', 'staff', 'volunteers', 'checkinprocessors', ]},
         {'id': 'display', 'legend': 'Display', 'fields': ['jinjaenabled', 'videoproviders', ]},
         {'id': 'visaletters', 'legend': 'Visa letters', 'fields': ['visa_letter_enabled', 'visa_letter_city', 'visa_letter_country', 'visa_letter_signer', ]},
+        {'id': 'diversitysurvey', 'legend': 'Diversity survey', 'fields': ['diversity_survey_enabled', ]},
         {'id': 'legacy', 'legend': 'Legacy', 'fields': ['schedulewidth', 'pixelsperminute']},
     ]
 

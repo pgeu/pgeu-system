@@ -260,6 +260,8 @@ class Conference(models.Model):
     visa_letter_country = models.CharField(max_length=100, blank=True, null=False, verbose_name="Visa letter country", help_text="Country the conference is held in, as it should appear in the visa letter (e.g. \"Germany\")")
     visa_letter_signer = models.TextField(blank=True, null=False, verbose_name="Visa letter signer", help_text="Multi-line text printed below the signature image: name, title, address, phone, email")
 
+    diversity_survey_enabled = models.BooleanField(blank=False, null=False, default=False, verbose_name="Diversity survey", help_text="Offer attendees an anonymous demographic survey after registering")
+
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'startdate', 'enddate',
@@ -270,7 +272,7 @@ class Conference(models.Model):
                         'confirmpolicy', 'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
                         'series', 'sendwelcomemail', 'scannerfields_list',
-                        'vat_registrations', 'visa_letter_enabled',
+                        'vat_registrations', 'visa_letter_enabled', 'diversity_survey_enabled',
     )
 
     def safe_export(self):
@@ -704,6 +706,12 @@ class ConferenceRegistration(models.Model):
 
     # Favorite-marked sessions
     favs = ArrayField(models.IntegerField(), null=False, blank=True, default=list)
+
+    # Diversity survey response state. Tri-state flag (null = not yet asked,
+    # True = submitted, False = explicitly declined). Used purely to drive the
+    # prompt logic; the actual demographic answers go to DiversitySurveyAnswer
+    # with no FK back here, so this row holds no clue about what was answered.
+    diversity_survey_response = models.BooleanField(null=True, blank=True, default=None)
 
     _unsafe_attributes = [
         'messaging_copiedfrom', 'messaging_copiedfrom_id',
@@ -2041,3 +2049,104 @@ class VisaLetterRequest(AttendeeSubmission):
 
     def purge_personal_data(self):
         self.delete()
+
+
+class DiversitySurveyAnswer(models.Model):
+    """Anonymous demographic survey response. Intentionally carries no FK or timestamp
+    that could be correlated back to a specific attendee."""
+    AGE_RANGE_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('18-24', '18-24'),
+        ('25-34', '25-34'),
+        ('35-44', '35-44'),
+        ('45-54', '45-54'),
+        ('55-64', '55-64'),
+        ('65+', '65 or older'),
+    )
+    GENDER_IDENTITY_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('woman', 'Woman'),
+        ('man', 'Man'),
+        ('non-binary', 'Non-binary'),
+        ('other', 'Other'),
+    )
+    ETHNICITY_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('white', 'White / European descent'),
+        ('asian', 'Asian'),
+        ('black', 'Black / African descent'),
+        ('hispanic', 'Hispanic / Latino'),
+        ('middle-eastern', 'Middle Eastern / North African'),
+        ('mixed', 'Mixed or multiple ethnicities'),
+        ('other', 'Other'),
+    )
+    CAREER_LEVEL_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('student', 'Student'),
+        ('entry', 'Entry level (0–2 years)'),
+        ('mid', 'Mid level (3–7 years)'),
+        ('senior', 'Senior level (8–15 years)'),
+        ('lead', 'Lead / Principal (15+ years)'),
+        ('management', 'Management'),
+        ('executive', 'Executive'),
+        ('other', 'Other'),
+    )
+    YEARS_IN_TECH_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('0-1', '0–1 years'),
+        ('2-5', '2–5 years'),
+        ('6-10', '6–10 years'),
+        ('11-15', '11–15 years'),
+        ('16-20', '16–20 years'),
+        ('20+', 'More than 20 years'),
+    )
+    EDUCATION_LEVEL_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('high-school', 'High school'),
+        ('bachelors', "Bachelor's degree"),
+        ('masters', "Master's degree"),
+        ('phd', 'PhD or Doctorate'),
+        ('bootcamp', 'Coding bootcamp'),
+        ('self-taught', 'Self-taught'),
+        ('other', 'Other'),
+    )
+    COMPANY_SIZE_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('1-10', '1–10 employees'),
+        ('11-50', '11–50 employees'),
+        ('51-200', '51–200 employees'),
+        ('201-1000', '201–1000 employees'),
+        ('1000+', 'More than 1000 employees'),
+        ('freelance', 'Freelancer / Consultant'),
+        ('non-profit', 'Non-profit organisation'),
+        ('government', 'Government'),
+        ('academic', 'Academic institution'),
+    )
+    FIRST_TIME_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('yes', 'Yes'),
+        ('no', 'No'),
+    )
+    HOW_HEARD_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('website', 'PostgreSQL website'),
+        ('social-media', 'Social media'),
+        ('colleague', 'Colleague or friend'),
+        ('previous-attendee', 'Previous conference attendee'),
+        ('mailing-list', 'Mailing list'),
+        ('blog', 'Blog or news article'),
+        ('employer', 'Employer'),
+        ('other', 'Other'),
+    )
+
+    conference = models.ForeignKey(Conference, on_delete=models.CASCADE)
+    age_range = models.CharField(max_length=20, blank=True, choices=AGE_RANGE_CHOICES, verbose_name="Age range")
+    gender_identity = models.CharField(max_length=20, blank=True, choices=GENDER_IDENTITY_CHOICES, verbose_name="Gender identity")
+    ethnicity = models.CharField(max_length=20, blank=True, choices=ETHNICITY_CHOICES, verbose_name="Ethnicity")
+    career_level = models.CharField(max_length=20, blank=True, choices=CAREER_LEVEL_CHOICES, verbose_name="Career level")
+    years_in_tech = models.CharField(max_length=10, blank=True, choices=YEARS_IN_TECH_CHOICES, verbose_name="Years in technology")
+    education_level = models.CharField(max_length=20, blank=True, choices=EDUCATION_LEVEL_CHOICES, verbose_name="Highest education level")
+    company_size = models.CharField(max_length=20, blank=True, choices=COMPANY_SIZE_CHOICES, verbose_name="Company size")
+    first_time_attendee = models.CharField(max_length=3, blank=True, choices=FIRST_TIME_CHOICES, verbose_name="Is this your first PostgreSQL conference?")
+    how_heard = models.CharField(max_length=20, blank=True, choices=HOW_HEARD_CHOICES, verbose_name="How did you hear about this conference?")
+    accessibility_needs = models.TextField(blank=True, verbose_name="Accessibility accommodations used (optional)")

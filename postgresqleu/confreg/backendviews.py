@@ -741,6 +741,7 @@ def purge_personal_data(request, urlname):
         exec_no_result("INSERT INTO confreg_aggregatepronouns (conference_id, pronouns, num) SELECT conference_id, pronouns, count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s GROUP BY conference_id, pronouns", {'confid': conference.id, })
         exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='', pronouns=0 WHERE conference_id=%(confid)s", {'confid': conference.id, })
         VisaLetterRequest.objects.filter(conference=conference).delete()
+        ConferenceRegistration.objects.filter(conference=conference).update(diversity_survey_response=None)
         conference.personal_data_purged = timezone.now()
         conference.save()
         messages.info(request, "Personal data purged from conference")
