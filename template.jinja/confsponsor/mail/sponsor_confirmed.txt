@@ -3,7 +3,7 @@ Hello!
 Your {{sponsor.level}} sponsorship for {{conference}}
 has now been fully confirmed. Thank you for your support!
 
-You can reach the full details about your sponsorship and it's
+You can reach the full details about your sponsorship and its
 benefits by going to the sponsorship dashboard page at:
 
 {{sitebase}}/events/sponsor/{{sponsor.id}}/
