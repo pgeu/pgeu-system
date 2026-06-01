@@ -268,6 +268,14 @@ def webhook(request, methodid):
                                   description=obj['description'])
             payout.save()
 
+            if payout.amount == 0:
+                # Stripe can emit payout.paid events with a zero amount (for example when the
+                # available balance nets out to zero over the payout period). There is nothing
+                # to move in the accounting in that case, so just record it and acknowledge.
+                StripeLog(message="Received zero-amount payout {}, recorded but no accounting entry created.".format(payout.payoutid),
+                          paymentmethod=method).save()
+                return HttpResponse("OK")
+
             acctrows = [
                 (pm.config('accounting_income'), 'Stripe payout {}'.format(payout.payoutid), -payout.amount, None),
                 (pm.config('accounting_payout'), 'Stripe payout {}'.format(payout.payoutid), payout.amount, None),
