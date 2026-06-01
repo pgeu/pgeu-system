@@ -36,10 +36,10 @@ def _is_speaker(registration):
 
 def is_visa_eligible(registration):
     return (
-        registration.payconfirmedat is not None
-        or registration.is_volunteer
-        or (registration.regtype and registration.regtype.specialtype in ('staff', 'spk', 'spkr'))
-        or _is_speaker(registration)
+        registration.payconfirmedat is not None or
+        registration.is_volunteer or
+        (registration.regtype and registration.regtype.specialtype in ('staff', 'spk', 'spkr')) or
+        _is_speaker(registration)
     )
 
 
