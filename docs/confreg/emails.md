@@ -62,6 +62,13 @@ to all recipients that are marked with green.
 Once recipients have been selected, click the *Send email to <n>
 attendees* button.
 
+### Sending email to filtered set of attendees
+
+It is also possible to use the [reporting](reports) system to generate
+advanced queries against the list of attendees and send an email to
+those attendees.
+
+
 ### Email contents and formatting
 
 Send at

@@ -105,6 +105,17 @@ manually selected badges by marking them on the registration list and
 generating from there. These are useful for smaller sets of badges,
 whereas the report method is more usable for large sets.
 
+## E-mail
+
+If you choose `email` as the target of the report, all field
+selections are ignored, only the filters are used. An attendee email
+form will be opened targeting the matching attendees.
+
+Note that this will always generate individually targeted emails. If
+you want to target an individual registration type, for example, you
+generally *don't* want to use this. Instead, use the
+[attendee email](emails) functionality directly.
+
 ## Time reports <a name="time"></a>
 
 The time reports can be used to draw graphs relative to the time of

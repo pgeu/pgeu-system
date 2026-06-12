@@ -1,0 +1,20 @@
+{%extends "confreg/confadmin_base.html" %}
+{%block title%}Report{%endblock%}
+{%block layoutblock%}
+<h1>Send email</h1>
+<p>
+  Redirecting, please wait...
+</p>
+<form id="emailform" method0="post" action="../regdashboard/list/sendmail/">{% csrf_token %}
+<input name="idlist" type="hidden" value="{{ idlist }}">
+<input name="initial_submnit" type="hidden" value="1">
+</form>
+{%endblock%}
+
+{% block pagescript %}
+<script language="javascript">
+document.addEventListener('DOMContentLoaded', () => {
+   document.getElementById('emailform').submit();
+});
+</script>
+{% endblock %}

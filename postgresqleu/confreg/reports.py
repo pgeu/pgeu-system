@@ -664,8 +664,15 @@ ORDER BY {}""".format(settings.SITEBASE, settings.SITEBASE, where, ", ".join([_g
                 return resp
             except Exception as e:
                 return HttpResponse("Exception occured: %s" % e, content_type='text/plain')
+        elif format == 'email':
+            # Redirect to send an attendee email, targeted at these specific attendees
+            return render(request, 'confreg/report_send_email.html', {
+                'conference': self.conference,
+                'breadcrumbs': (('/events/admin/{0}/reports/'.format(self.conference.urlname), 'Attendee reports'), ),
+                'idlist': ','.join(str(a['id']) for a in result)
+            })
         else:
-            raise Exception("Unknown format")
+            raise Exception("Unknown format: {}".format(format))
 
         allheaders = [self.fieldmap[f].title for f in fields]
         if len(extracols):
