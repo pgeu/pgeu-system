@@ -9,7 +9,7 @@ import io
 from PIL import Image, ImageFile
 
 from postgresqleu.util.magic import magicdb
-from postgresqleu.util.image import rescale_image, apply_exif_orientation
+from postgresqleu.util.image import rescale_image, apply_exif_orientation, EXIF_ORIENTATION_TAG
 
 
 class LowercaseEmailField(models.EmailField):
@@ -76,11 +76,11 @@ class ImageBinaryField(models.Field):
 
         # Bake EXIF orientation in; re-encode only when actually rotated so
         # untouched JPEGs are not needlessly recompressed.
-        oriented = apply_exif_orientation(img)
-        if oriented is not img:
+        if img.getexif().get(EXIF_ORIENTATION_TAG, 1) != 1:
+            fmt = img.format
+            img = apply_exif_orientation(img)
             saver = io.BytesIO()
-            oriented.save(saver, format=img.format)
-            img = oriented
+            img.save(saver, format=fmt)
             value = saver.getvalue()
 
         if self.resolution:

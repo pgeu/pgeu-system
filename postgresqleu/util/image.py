@@ -1,30 +1,17 @@
 import io
 
-from PIL import Image, ImageFile
+from PIL import Image, ImageFile, ImageOps
 
 
-# EXIF Orientation tag values mapped to PIL transpose ops (1 = normal, omitted).
-_EXIF_ORIENTATION_OPS = {
-    2: Image.FLIP_LEFT_RIGHT,
-    3: Image.ROTATE_180,
-    4: Image.FLIP_TOP_BOTTOM,
-    5: Image.TRANSPOSE,
-    6: Image.ROTATE_270,
-    7: Image.TRANSVERSE,
-    8: Image.ROTATE_90,
-}
+# EXIF "Orientation" tag: 274 decimal = 0x0112 hex as per Exif 2.32.
+# Values: 1 = normal, 2..8 = mirror/rotate transforms. Exposed here so we can
+# peek at the tag without re-encoding the image.
+EXIF_ORIENTATION_TAG = 0x0112
 
 
 # Bake EXIF orientation into pixel data; PIL does not auto-rotate on open.
 def apply_exif_orientation(img):
-    try:
-        exif = img._getexif()
-    except (AttributeError, KeyError, IndexError, TypeError):
-        return img
-    if not exif:
-        return img
-    op = _EXIF_ORIENTATION_OPS.get(exif.get(274))
-    return img.transpose(op) if op is not None else img
+    return ImageOps.exif_transpose(img)
 
 
 # Rescale an image in the form of bytes to a new set of bytes
