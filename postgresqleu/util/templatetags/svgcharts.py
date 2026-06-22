@@ -50,11 +50,21 @@ def svgpiechart(svgdata, legendwidth=0):
     t = template.loader.get_template('util/svgpiechart.svg')
 
     slices = []
+    circle = None
     currpercent = 0
 
     total = sum(svgdata.values())
 
     if total > 0:
+        if len([v for v in svgdata.values() if v > 0]) == 1:
+            # Chrome has problems drawing arcs if start and end are very close to each other,
+            # and they will be if there is a single entry. So switch to using a circle instead
+            # in that case.
+            singleitem = next(v for v in enumerate(svgdata.items()) if v[1][1] > 0)
+            circle = {
+                'color': defaultcolors[singleitem[0] % len(defaultcolors)],
+                'popup': '{}\n\n{} (100%)'.format(*singleitem[1]),
+            }
         for i, (k, v) in enumerate(svgdata.items()):
             thispercent = 100 * v / total
             slices.append({
@@ -67,7 +77,7 @@ def svgpiechart(svgdata, legendwidth=0):
                 'percent': thispercent > 5 and round(thispercent, 1) or 0,
                 'color': next(colors),
                 'largearc': thispercent > 50 and 1 or 0,
-                'drawslice': thispercent > 0,
+                'drawslice': thispercent > 0 and not circle,
                 'popup': '{}\n\n{} ({}%)'.format(k, v, round(thispercent, 1)),
                 'legend': {
                     'y': -100 + (i + 1) * 20 - 10,
@@ -79,6 +89,7 @@ def svgpiechart(svgdata, legendwidth=0):
     return t.render({
         'radius': radius,
         'slices': slices,
+        'circle': circle,
         'legendwidth': legendwidth,
     })
 

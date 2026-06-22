@@ -129,7 +129,7 @@ div.feedbackchart h5 {
 div.feedbackbarchart  h5 {
     text-align: center;
 }
-div.feedbackchart svg path.pieslice:hover {
+div.feedbackchart svg .pieslice:hover {
     stroke-width: 10;
     stroke-opacity: 0.5;
 }
