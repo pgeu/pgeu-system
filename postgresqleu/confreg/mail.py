@@ -224,7 +224,12 @@ def attendee_email_form(request, conference, providerclass=BaseAttendeeEmailProv
                 form._errors = ErrorDict()
                 form.data['sendat'] = timezone.now()
             else:
-                form.is_confirm = False
+                is_confirm = False
+                # We need to re-create and re-validate the form here for it to fill out the django
+                # values properly.
+                form = BackendSendEmailForm(conference, contextrefs, is_confirm, data=p, initial=initial, textpreview=textpreview, htmlpreview=htmlpreview)
+                provider.prepare_form(form)
+                form.is_valid()
     else:
         form = BackendSendEmailForm(conference, contextrefs, is_confirm, initial=initial)
         provider.prepare_form(form)

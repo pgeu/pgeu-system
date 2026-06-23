@@ -5218,10 +5218,16 @@ def crossmail_send(request):
 
                 messages.info(request, "Sent {0} emails.".format(len(recipients)))
                 return HttpResponseRedirect("../")
-        if not recipients:
+        elif not recipients:
+            # Form is valid, but no recipients
             if recipients is not None:
                 form.add_error(None, "No recipients matched")
             form.is_confirm = False
+        else:
+            # Form is not valid. We nede to create a new form to fill out the django values properly
+            is_confirm = False
+            form = CrossConferenceMailForm(request.user, is_confirm, data=p, textpreview=textpreview, htmlpreview=htmlpreview)
+            form.is_valid()
     else:
         form = CrossConferenceMailForm(request.user, is_confirm)
         recipients = None
