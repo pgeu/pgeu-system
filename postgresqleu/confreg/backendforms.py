@@ -1986,10 +1986,16 @@ class BackendSendEmailForm(django.forms.Form):
         self.conference = conference
         self.contextrefs = contextrefs
         self.is_confirm = is_confirm
+        self.max_subject_length = 100 - len(str(self.conference)) - 3
 
         self.fields['available_fields'].widget = SimpleTreeviewWidget(treedata=contextrefs)
         self.fields['subject'].help_text = 'Subject will be prefixed with <strong>[{}]</strong>'.format(conference)
         self.fields['message'].widget.attrs['data-extrafieldsforpreview'] = 'idlist'
+
+        # Max length of subject is 100, but we prefix with [] and a space
+        # Need to set both field and widget...
+        self.fields['subject'].max_length = self.max_subject_length
+        self.fields['subject'].widget.attrs['maxlength'] = self.max_subject_length
 
         if is_confirm:
             for f in self.fields:
@@ -2010,11 +2016,8 @@ class BackendSendEmailForm(django.forms.Form):
         if not self.cleaned_data['subject']:
             raise ValidationError("Please enter a subject")
 
-        # Max length of subject is 100, but we prefix with [] and a space
-        maxlen = 100 - len(str(self.conference)) - 3
-
-        if len(self.cleaned_data['subject']) > maxlen:
-            raise ValidationError("Maximum length of subject is {}, to leave room for prefix. You entered {} characters.".format(maxlen, len(self.cleaned_data['subject'])))
+        if len(self.cleaned_data['subject']) > self.max_subject_length:
+            raise ValidationError("Maximum length of subject is {}, to leave room for prefix. You entered {} characters.".format(self.max_subject_length, len(self.cleaned_data['subject'])))
 
         return self.cleaned_data['subject']
 
