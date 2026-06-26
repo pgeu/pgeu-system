@@ -17,7 +17,7 @@ from .forms import SelectSetValueField
 from .oauthapps import oauth_application_choices, oauth_application_create
 
 
-def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, allow_save=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None, topadmin=None):
+def backend_process_form(request, urlname, formclass, id, cancel_url='../', saved_url='../', allow_new=True, allow_delete=True, allow_save=True, breadcrumbs=None, permissions_already_checked=False, conference=None, bypass_conference_filter=False, instancemaker=None, deleted_url=None, topadmin=None, savebutton=''):
     if not conference and not bypass_conference_filter:
         conference = get_authenticated_conference(request, urlname)
 
@@ -223,6 +223,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
         'allow_delete': allow_delete and instance.pk,
         'disallow_save': not allow_save,
         'adminurl': adminurl,
+        'savebutton': savebutton,
         'linked': [(url, handler, handler.get_list(form.instance)) for url, handler in list(form.linked_objects.items()) if form.instance],
     })
 
