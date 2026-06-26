@@ -32,6 +32,7 @@ from postgresqleu.util.messaging.short import get_shortened_post_length
 from postgresqleu.util.markup import LineBreakString
 
 import base64
+import datetime
 from decimal import Decimal
 import zoneinfo
 
@@ -390,6 +391,29 @@ class Conference(models.Model):
     @property
     def scannerfields_list(self):
         return [f for f in self.scannerfields.split(',') if f != '']
+
+    def clean_copied_fields(self):
+        self.accounting_object = None
+        self.personal_data_purged = None
+        self.promoactive = False
+        self.key_public = ''
+        self.key_private = ''
+
+        self.registrationopen = False
+        self.callforpapersopen = False
+        self.callforsponsorsopen = False
+        self.feedbackopen = False
+        self.conferencefeedbackopen = False
+        self.scheduleactive = False
+        self.sessionsactive = False
+        self.checkinactive = False
+
+        self.lastmodified = datetime.datetime.now()
+
+    def copy_m2m_from(self, fromconf, overwrite=False):
+        for f in self._meta.many_to_many:
+            if overwrite or not getattr(self, f.name).all():
+                getattr(self, f.name).set(getattr(fromconf, f.name).all())
 
 
 class RegistrationClass(models.Model):

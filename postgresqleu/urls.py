@@ -186,6 +186,8 @@ urlpatterns.extend([
     re_path(r'^events/admin/([^/]+)/reports/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
     re_path(r'^events/admin/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
     re_path(r'^events/admin/newconference/$', postgresqleu.confreg.backendviews.new_conference),
+    re_path(r'^events/admin/newconference/([^/]+)/$', postgresqleu.confreg.backendviews.do_new_conference),
+    re_path(r'^events/admin/newconference/([^/]+)/finalize/(\d+)/$', postgresqleu.confreg.backendviews.do_new_conference_finalize),
     re_path(r'^events/admin/meta/series/(.*/)?$', postgresqleu.confreg.backendviews.edit_series),
     re_path(r'^events/admin/meta/tshirts/(.*/)?$', postgresqleu.confreg.backendviews.edit_tshirts),
     re_path(r'^events/admin/meta/speakers/(\d+)/merge/$', postgresqleu.confreg.backendviews.merge_speakers),

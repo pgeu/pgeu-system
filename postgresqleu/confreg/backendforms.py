@@ -23,6 +23,7 @@ from postgresqleu.util.db import exec_to_single_list, exec_to_scalar, exec_to_li
 from postgresqleu.util.crypto import generate_rsa_keypair
 from postgresqleu.util.forms import SelectSetValueField
 from postgresqleu.util.forms import ConfirmFormMixin
+from postgresqleu.util.forms import GroupedModelChoiceField
 from postgresqleu.util.widgets import StaticTextWidget, EmailTextWidget, MonospaceTextarea
 from postgresqleu.util.widgets import TagOptionsTextWidget, SimpleTreeviewWidget
 from postgresqleu.util.widgets import StaticHtmlPreviewWidget
@@ -253,6 +254,8 @@ class BackendSuperConferenceForm(BackendForm):
         if not self.instance.id:
             self.remove_field('accounting_object')
 
+        self.initial.update(getattr(self.instance, '_superuser_form_initial', {}))
+
     def pre_create_item(self):
         # Create a new accounting object automatically if one does not exist already
         (obj, created) = postgresqleu.accounting.models.Object.objects.get_or_create(name=self.instance.urlname,
@@ -318,6 +321,12 @@ class BackendConferenceSeriesForm(BackendForm):
     class Meta:
         model = ConferenceSeries
         fields = ['name', 'sortkey', 'visible', 'administrators', 'intro', ]
+
+
+class BackendNewConferenceForm(django.forms.Form):
+    copyfrom = GroupedModelChoiceField(groupfield='series', required=False, empty_label='Do not copy existing conference', queryset=Conference.objects.all().order_by('-startdate'), label="Copy from conference")
+
+    savebutton = 'Create conference'
 
 
 class BackendTshirtSizeForm(BackendForm):

@@ -65,6 +65,7 @@ from .backendforms import BackendMessagingForm
 from .backendforms import BackendSeriesMessagingForm
 from .backendforms import BackendRegistrationDmForm
 from .backendforms import BackendMergeSpeakerForm
+from .backendforms import BackendNewConferenceForm
 from .mail import attendee_email_form, BaseAttendeeEmailProvider, AttendeeEmailQuerySampleMixin
 from .contextutil import has_yaml
 
@@ -135,6 +136,46 @@ def edit_tshirts(request, rest):
 
 @superuser_required
 def new_conference(request):
+    if request.method == "POST":
+        form = BackendNewConferenceForm(data=request.POST)
+        if form.is_valid():
+            if form.cleaned_data['copyfrom'] is None:
+                return HttpResponseRedirect("new/")
+            return HttpResponseRedirect("{}/".format(form.cleaned_data['copyfrom'].id))
+    else:
+        form = BackendNewConferenceForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'form': form,
+        'whatverb': 'Create new conference',
+        'cancelurl': '../',
+    })
+
+
+@superuser_required
+@transaction.atomic
+def do_new_conference(request, rest):
+    if rest == "new":
+        maker = lambda: Conference()
+    else:
+        copyfrom = Conference.objects.get(pk=int(rest))
+        copyfrom.clean_copied_fields()
+
+        # Copy foreign keys out before we clear the primary key. We have to do this for
+        # all m2m fields that are used in BackendSuperConferenceForm() -- the ones that are
+        # only on other forms will be copied in do_new_conference_finalize()
+        initial = {
+            'administrators': copyfrom.administrators.all(),
+            'paymentmethods': copyfrom.paymentmethods.all(),
+        }
+
+        copyfrom.pk = None
+        copyfrom._state.adding = True
+        copyfrom._superuser_form_initial = initial
+
+        maker = lambda: copyfrom
+
     return backend_process_form(request,
                                 None,
                                 BackendSuperConferenceForm,
@@ -143,8 +184,24 @@ def new_conference(request):
                                 allow_new=True,
                                 allow_delete=False,
                                 conference=Conference(),
-                                instancemaker=lambda: Conference(),
+                                instancemaker=maker,
+                                savebutton='Create conference',
+                                saved_url="finalize/{{id}}/",
     )
+
+
+@superuser_required
+@transaction.atomic
+def do_new_conference_finalize(request, rest, id):
+    conference = get_object_or_404(Conference, pk=id)
+
+    if rest != 'new':
+        # If it's a copied conference, we need to copy all the m2m fields
+        copyfrom = get_object_or_404(Conference, pk=int(rest))
+        conference.copy_m2m_from(copyfrom)
+        conference.save()
+
+    return HttpResponseRedirect('/events/admin/{}/'.format(conference.urlname))
 
 
 def edit_registration(request, urlname, regid):
