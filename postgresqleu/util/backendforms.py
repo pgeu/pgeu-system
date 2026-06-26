@@ -149,8 +149,10 @@ class BackendForm(ConcurrentProtectedModelForm):
             if self.instance.pk:
                 # If this object isn't created yet, then it by definition has no related
                 # objects, so just bypass the collection of values since it will cause
-                # errors.
+                # errors, unless they are listed in "initial".
                 vals = [o.pk for o in getattr(self.instance, field).all()]
+            elif self.initial.get(field, None):
+                vals = [o.pk for o in self.initial[field].all()]
             else:
                 vals = []
             if 'data' in kwargs and str(field) in kwargs['data']:
