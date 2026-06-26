@@ -193,7 +193,7 @@ def backend_process_form(request, urlname, formclass, id, cancel_url='../', save
                         form.instance.save(update_fields=form.json_form_fields.keys())
 
                     form.post_save()
-                    return HttpResponseRedirect(saved_url)
+                    return HttpResponseRedirect(saved_url.replace("{{id}}", str(form.instance.id)))
             except DatabaseError as e:
                 form.add_error(None, "Failed to save entry: {}".format(e))
     else:
