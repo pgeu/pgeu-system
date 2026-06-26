@@ -127,9 +127,19 @@ class GroupedIterator(forms.models.ModelChoiceIterator):
         super().__init__(field)
 
     def __iter__(self):
+        if self.field.empty_label is not None:
+            yield ("", self.field.empty_label)
         for group, choices in groupby(self.queryset.all().order_by(self.groupby, *self.field.orderby), attrgetter(self.groupby)):
             yield (group,
                    [self.choice(c) for c in choices])
+
+
+class GroupedModelChoiceField(forms.ModelChoiceField):
+    def __init__(self, *args, groupfield, **kwargs):
+        self.iterator = partial(GroupedIterator, groupby=groupfield)
+        self.groupfield = groupfield
+        super().__init__(*args, **kwargs)
+        self.orderby = self.queryset.query.order_by
 
 
 class GroupedModelMultipleChoiceField(forms.ModelMultipleChoiceField):
