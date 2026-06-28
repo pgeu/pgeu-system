@@ -171,8 +171,10 @@ class TransferwiseApi(object):
                     # indicate it, points to the wrong account for incoming payments.
                     # Oh, and the status is *always* set to `outgoing_payment_sent`, even for incoming
                     # payments. I guess all payments are outgoing from *something*.
-                    # Let's do a wild gamble and assume the description is always this...
-                    if activity.get('description', '').startswith('Sent by '):
+                    # We gamble on the description either being "Sent by <someone>" (which it appears to
+                    # be when sending manually) or "Sent" with nothing following it (which it appears to
+                    # nowadays be on automated sends)
+                    if activity.get('description', '').startswith('Sent by ') or activity.get('description', '') == 'Sent':
                         negatizer = -1
                     else:
                         negatizer = 1
