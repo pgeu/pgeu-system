@@ -16,6 +16,7 @@ from postgresqleu.confreg.models import MessagingProvider
 from postgresqleu.confreg.util import get_conference_or_404
 from postgresqleu.confreg.jinjafunc import render_sandboxed_template, filter_social
 from postgresqleu.scheduler.util import trigger_immediate_job_run
+from postgresqleu.util.image import apply_exif_orientation
 from postgresqleu.util.request import get_int_or_error
 from postgresqleu.util.messaging import ProviderCache, get_messaging_class
 from postgresqleu.util.messaging.util import notify_twitter_moderation
@@ -109,7 +110,7 @@ def create_twitterpost_thumbnail(t):
     p = ImageFile.Parser()
     p.feed(bytes(t.image))
     p.close()
-    im = p.image
+    im = apply_exif_orientation(p.image)
     im.thumbnail((256, 256))
     b = io.BytesIO()
     im.save(b, "png")

@@ -1,6 +1,17 @@
 import io
 
-from PIL import Image, ImageFile
+from PIL import Image, ImageFile, ImageOps
+
+
+# EXIF "Orientation" tag: 274 decimal = 0x0112 hex as per Exif 2.32.
+# Values: 1 = normal, 2..8 = mirror/rotate transforms. Exposed here so we can
+# peek at the tag without re-encoding the image.
+EXIF_ORIENTATION_TAG = 0x0112
+
+
+# Bake EXIF orientation into pixel data; PIL does not auto-rotate on open.
+def apply_exif_orientation(img):
+    return ImageOps.exif_transpose(img)
 
 
 # Rescale an image in the form of bytes to a new set of bytes
@@ -17,6 +28,8 @@ def rescale_image_bytes(origbytes, resolution):
 
 
 def rescale_image(img, resolution, centered=False):
+    fmt = img.format  # transpose returns a new image with .format = None
+    img = apply_exif_orientation(img)
     scale = min(
         float(resolution[0]) / float(img.size[0]),
         float(resolution[1]) / float(img.size[1]),
@@ -36,7 +49,7 @@ def rescale_image(img, resolution, centered=False):
         ))
         centeredimg.save(saver, format='PNG')
     else:
-        newimg.save(saver, format=img.format)
+        newimg.save(saver, format=fmt)
 
     return saver.getvalue()
 
