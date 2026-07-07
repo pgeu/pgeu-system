@@ -211,7 +211,7 @@ class BackendConferenceForm(BackendForm):
 
 
 def _timezone_choices():
-    return [(z, z) for z in zoneinfo.available_timezones() if z not in ('localtime', 'Factory')]
+    return [(z, z) for z in sorted(zoneinfo.available_timezones()) if z not in ('localtime', 'Factory')]
 
 
 class BackendSuperConferenceForm(BackendForm):
