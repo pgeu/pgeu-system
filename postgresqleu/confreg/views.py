@@ -3712,6 +3712,7 @@ FROM confreg_conferenceadditionaloption ao
 LEFT JOIN pending ON pending.aoid=ao.id
 LEFT JOIN direct ON direct.aoid=ao.id
 WHERE ao.conference_id={0}
+ORDER BY sortkey, ao.name
 """.format(conference.id))
 
     tables.append({'title': 'Additional options',
