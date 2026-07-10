@@ -330,13 +330,18 @@ if __name__ == "__main__":
     parser.add_argument('destpath', type=str, help='Destination absolute path (contents will be erased!)')
     parser.add_argument('--branch', type=str, help='Deploy directly from branch')
     parser.add_argument('--templates', action='store_true', help='Deploy templates (except pages) and static instead of pages')
+    parser.add_argument('--checktemplates', action='store_true', help='Verify the syntax of the templates (destination directory not used)')
 
     args = parser.parse_args()
+
+    if args.templates and args.checktemplates:
+        print("You can't both check and deploy templates at the same time")
+        sys.exit(1)
 
     if not os.path.isabs(args.sourcepath):
         print("Source path is not absolute!")
         sys.exit(1)
-    if not os.path.isabs(args.destpath):
+    if not args.checktemplates and not os.path.isabs(args.destpath):
         print("Destination path is not absolute!")
         sys.exit(1)
 
@@ -344,7 +349,7 @@ if __name__ == "__main__":
         print("Source directory does not exist!")
         sys.exit(1)
 
-    if not os.path.isdir(args.destpath):
+    if not args.checktemplates and not os.path.isdir(args.destpath):
         print("Destination directory does not exist!")
         sys.exit(1)
 
@@ -423,6 +428,25 @@ if __name__ == "__main__":
         for f in sorted(source.listfiles('templates/context.override.d')):
             if f.endswith('.json') or (_has_yaml and f.endswith('.yaml')):
                 deep_update_context(context, load_context(source.readfile(os.path.join('templates/context.override.d', f)), os.path.splitext(f)[1][1:]))
+
+    if args.checktemplates:
+        errcount = 0
+        for relpath, fn in source.walkfiles('templates'):
+            if fn.endswith('.html'):
+                name = os.path.join(os.path.join(relpath[len('templates/'):], fn))
+                try:
+                    t = env.get_template(name)
+                except jinja2.exceptions.TemplateSyntaxError as e:
+                    print("Template syntax error in {} on line {}: {}".format(name, e.lineno, e.message))
+                    errcount += 1
+                except Exception as e:
+                    print("Exception parsing {}: {}".format(name, e))
+                    errcount += 1
+        if errcount:
+            print("{} templates with errors found.".format(errcount))
+            sys.exit(1)
+        else:
+            sys.exit(0)
 
     knownfiles = []
     knownfiles = _deploy_static(source, args.destpath)
