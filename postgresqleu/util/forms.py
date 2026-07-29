@@ -181,6 +181,11 @@ class ImageBinaryFormField(forms.Field):
             return None
         if value is None:
             return None
+        # value is an UploadedFile. to_python() can run more than once per
+        # request (e.g. Field.has_changed() -> changed_data, or a second
+        # full_clean()), so rewind before reading to avoid returning b'' on a
+        # subsequent pass.
+        value.seek(0)
         return value.read()
 
     def prepare_value(self, value):
