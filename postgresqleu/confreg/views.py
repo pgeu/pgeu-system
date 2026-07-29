@@ -145,6 +145,9 @@ def _registration_dashboard(request, conference, reg, has_other_multiregs, redir
     if conference.confirmpolicy and not reg.policyconfirmedat:
         return HttpResponseRedirect('{}policy/'.format(redir_root))
 
+    if conference.diversity_survey_enabled and reg.diversity_survey_response is None:
+        return HttpResponseRedirect('{}survey/'.format(redir_root))
+
     mails = _attendeemail_queryset(conference, reg)
 
     wikipagesQ = Q(publicview=True) | Q(viewer_attendee__attendee=request.user) | Q(viewer_regtype__conferenceregistration__attendee=request.user)
@@ -3623,6 +3626,7 @@ def admin_dashboard_single(request, urlname):
             'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
             'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),
             'pending_cancel_requests': ConferenceRegistration.objects.filter(conference=conference, cancelrequestedat__isnull=False, canceledat__isnull=True),
+            'pending_visa_requests': conditional_exec_to_scalar(conference.visa_letter_enabled, "SELECT EXISTS (SELECT 1 FROM confreg_visaletterrequest WHERE conference_id=%(confid)s AND status='pending')", {'confid': conference.id}),
         })
 
 
