@@ -56,6 +56,21 @@ class InvoiceWrapper(object):
     def __init__(self, invoice):
         self.invoice = invoice
 
+    @property
+    def invoiceurl(self):
+        if self.invoice.recipient_secret:
+            # If we have the secret, include it in the url even if we have
+            # a user. This is because users often forward that email, and
+            # then the recipient can access it. As long as the secret is
+            # included, both the logged in and the not logged in user
+            # can see it.
+            return '%s/invoices/%s/%s/' % (settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
+        elif self.invoice.recipient_user:
+            # General URL that shows a normal invoice
+            return '%s/invoices/%s/' % (settings.SITEBASE, self.invoice.pk)
+        else:
+            return None
+
     def finalizeInvoice(self):
         # This will close out this invoice for editing, and also
         # generate the actual PDF
@@ -233,22 +248,10 @@ class InvoiceWrapper(object):
             return
 
         # Build a text email, and attach the PDF if there is one
-        if self.invoice.recipient_secret:
-            # If we have the secret, include it in the email even if we have
-            # a user. This is because users often forward that email, and
-            # then the recipient can access it. As long as the secret is
-            # included, both the logged in and the not logged in user
-            # can see it.
-            invoiceurl = '%s/invoices/%s/%s/' % (settings.SITEBASE, self.invoice.pk, self.invoice.recipient_secret)
-        elif self.invoice.recipient_user:
-            # General URL that shows a normal invoice
-            invoiceurl = '%s/invoices/%s/' % (settings.SITEBASE, self.invoice.pk)
-        else:
-            invoiceurl = None
 
         param = {
-            'invoice': InvoicePresentationWrapper(self.invoice, invoiceurl),
-            'invoiceurl': invoiceurl,
+            'invoice': InvoicePresentationWrapper(self.invoice, self.invoiceurl),
+            'invoiceurl': self.invoiceurl,
             'currency_abbrev': settings.CURRENCY_ABBREV,
             'currency_symbol': settings.CURRENCY_SYMBOL,
         }
