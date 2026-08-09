@@ -162,7 +162,7 @@ know the URL for it.
 
 Promotion text
 : Short text (supports markdown) with information about the conference,
-which is use din promotional pages on the main website.
+which is used in promotional pages on the main website.
 
 URL to promo picture
 : An URL pointing to a picture promoting this event, which will be
