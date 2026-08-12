@@ -256,6 +256,13 @@ class Conference(models.Model):
     key_private = models.TextField(null=False, blank=True, verbose_name="Private RSA key for signatures")
     web_origins = models.CharField(null=False, blank=True, max_length=1000, verbose_name="Allowed web origins for API calls (comma separated list)")
 
+    visa_letter_enabled = models.BooleanField(blank=False, null=False, default=False, verbose_name="Visa letters", help_text="Allow eligible attendees to request a visa invitation letter")
+    visa_letter_city = models.CharField(max_length=100, blank=True, null=False, verbose_name="Visa letter city", help_text="City the conference is held in, as it should appear in the visa letter (e.g. \"Berlin\")")
+    visa_letter_country = models.CharField(max_length=100, blank=True, null=False, verbose_name="Visa letter country", help_text="Country the conference is held in, as it should appear in the visa letter (e.g. \"Germany\")")
+    visa_letter_signer = models.TextField(blank=True, null=False, verbose_name="Visa letter signer", help_text="Multi-line text printed below the signature image: name, title, address, phone, email")
+
+    diversity_survey_enabled = models.BooleanField(blank=False, null=False, default=False, verbose_name="Diversity survey", help_text="Offer attendees an anonymous demographic survey after registering")
+
     # Attributes that are safe to access in jinja templates
     _safe_attributes = ('registrationopen', 'registrationtimerange', 'IsRegistrationOpen',
                         'startdate', 'enddate',
@@ -266,7 +273,7 @@ class Conference(models.Model):
                         'confirmpolicy', 'conferencedatestr', 'location',
                         'feedbackopen', 'skill_levels', 'urlname', 'conferencename',
                         'series', 'sendwelcomemail', 'scannerfields_list',
-                        'vat_registrations',
+                        'vat_registrations', 'visa_letter_enabled', 'diversity_survey_enabled',
     )
 
     def safe_export(self):
@@ -723,6 +730,12 @@ class ConferenceRegistration(models.Model):
 
     # Favorite-marked sessions
     favs = ArrayField(models.IntegerField(), null=False, blank=True, default=list)
+
+    # Diversity survey response state. Tri-state flag (null = not yet asked,
+    # True = submitted, False = explicitly declined). Used purely to drive the
+    # prompt logic; the actual demographic answers go to DiversitySurveyAnswer
+    # with no FK back here, so this row holds no clue about what was answered.
+    diversity_survey_response = models.BooleanField(null=True, blank=True, default=None)
 
     _unsafe_attributes = [
         'messaging_copiedfrom', 'messaging_copiedfrom_id',
@@ -1987,3 +2000,177 @@ class ConferenceRemovedData(models.Model):
             ('urlname', 'description'),
         )
         ordering = ('urlname', 'description')
+
+
+class AttendeeSubmission(models.Model):
+    """Abstract base for per-registration form submissions tied to a conference.
+
+    Concrete subclasses add their own data fields and override purge_personal_data()
+    to either delete the row or null out personal fields, depending on whether any
+    aggregate (e.g. anonymised survey responses) should survive a personal-data purge.
+    """
+    conference = models.ForeignKey(Conference, on_delete=models.CASCADE)
+    registration = models.ForeignKey(ConferenceRegistration, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        ordering = ('-created_at', )
+
+    def purge_personal_data(self):
+        raise NotImplementedError
+
+
+class VisaLetterRequest(AttendeeSubmission):
+    STATUS_PENDING = 'pending'
+    STATUS_CHANGES_NEEDED = 'changes_needed'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = (
+        (STATUS_PENDING, 'Pending review'),
+        (STATUS_CHANGES_NEEDED, 'Changes needed'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    )
+
+    SEX_CHOICES = (
+        ('male', 'Male'),
+        ('female', 'Female'),
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    admin_notes = models.TextField(blank=True, null=False, default='', verbose_name="Admin notes")
+    accommodation_covered = models.BooleanField(blank=False, null=False, default=False, verbose_name="Accommodation and travel covered", help_text="Tick if accommodation and travel costs are covered for this attendee; the visa letter will state this.")
+
+    passport_name = models.CharField(max_length=200, verbose_name="Full name on passport")
+    passport_sex = models.CharField(max_length=10, choices=SEX_CHOICES, verbose_name="Sex (as on passport)")
+    date_of_birth = models.DateField(verbose_name="Date of birth")
+    passport_number = models.CharField(max_length=50, verbose_name="Passport number")
+    nationality = models.CharField(max_length=100, verbose_name="Nationality")
+    home_address = models.TextField(verbose_name="Home address")
+    embassy_name = models.CharField(max_length=200, verbose_name="Embassy / consulate name")
+    embassy_address = models.TextField(verbose_name="Embassy / consulate address")
+    entry_date = models.DateField(verbose_name="Planned entry date")
+    exit_date = models.DateField(verbose_name="Planned exit date")
+    accommodation = models.CharField(max_length=200, verbose_name="Accommodation while in country")
+    contact_info = models.CharField(max_length=200, verbose_name="Contact info while in country")
+
+    class Meta(AttendeeSubmission.Meta):
+        unique_together = (('conference', 'registration'), )
+
+    def __str__(self):
+        return '{} ({})'.format(self.registration.fullname, self.get_status_display())
+
+    def _display_registration(self, cache):
+        return self.registration.fullname
+
+    def clean(self):
+        super().clean()
+        if self.entry_date and self.exit_date and self.exit_date <= self.entry_date:
+            raise ValidationError({'exit_date': 'Exit date must be after entry date.'})
+
+    def purge_personal_data(self):
+        self.delete()
+
+
+class DiversitySurveyAnswer(models.Model):
+    """Anonymous demographic survey response. Intentionally carries no FK or timestamp
+    that could be correlated back to a specific attendee."""
+    AGE_RANGE_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('18-24', '18-24'),
+        ('25-34', '25-34'),
+        ('35-44', '35-44'),
+        ('45-54', '45-54'),
+        ('55-64', '55-64'),
+        ('65+', '65 or older'),
+    )
+    GENDER_IDENTITY_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('woman', 'Woman'),
+        ('man', 'Man'),
+        ('non-binary', 'Non-binary'),
+        ('other', 'Other'),
+    )
+    ETHNICITY_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('white', 'White / European descent'),
+        ('asian', 'Asian'),
+        ('black', 'Black / African descent'),
+        ('hispanic', 'Hispanic / Latino'),
+        ('middle-eastern', 'Middle Eastern / North African'),
+        ('mixed', 'Mixed or multiple ethnicities'),
+        ('other', 'Other'),
+    )
+    CAREER_LEVEL_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('student', 'Student'),
+        ('entry', 'Entry level (0–2 years)'),
+        ('mid', 'Mid level (3–7 years)'),
+        ('senior', 'Senior level (8–15 years)'),
+        ('lead', 'Lead / Principal (15+ years)'),
+        ('management', 'Management'),
+        ('executive', 'Executive'),
+        ('other', 'Other'),
+    )
+    YEARS_IN_TECH_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('0-1', '0–1 years'),
+        ('2-5', '2–5 years'),
+        ('6-10', '6–10 years'),
+        ('11-15', '11–15 years'),
+        ('16-20', '16–20 years'),
+        ('20+', 'More than 20 years'),
+    )
+    EDUCATION_LEVEL_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('high-school', 'High school'),
+        ('bachelors', "Bachelor's degree"),
+        ('masters', "Master's degree"),
+        ('phd', 'PhD or Doctorate'),
+        ('bootcamp', 'Coding bootcamp'),
+        ('self-taught', 'Self-taught'),
+        ('other', 'Other'),
+    )
+    COMPANY_SIZE_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('1-10', '1–10 employees'),
+        ('11-50', '11–50 employees'),
+        ('51-200', '51–200 employees'),
+        ('201-1000', '201–1000 employees'),
+        ('1000+', 'More than 1000 employees'),
+        ('freelance', 'Freelancer / Consultant'),
+        ('non-profit', 'Non-profit organisation'),
+        ('government', 'Government'),
+        ('academic', 'Academic institution'),
+    )
+    FIRST_TIME_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('yes', 'Yes'),
+        ('no', 'No'),
+    )
+    HOW_HEARD_CHOICES = (
+        ('', 'Prefer not to say'),
+        ('website', 'PostgreSQL website'),
+        ('social-media', 'Social media'),
+        ('colleague', 'Colleague or friend'),
+        ('previous-attendee', 'Previous conference attendee'),
+        ('mailing-list', 'Mailing list'),
+        ('blog', 'Blog or news article'),
+        ('employer', 'Employer'),
+        ('other', 'Other'),
+    )
+
+    conference = models.ForeignKey(Conference, on_delete=models.CASCADE)
+    age_range = models.CharField(max_length=20, blank=True, choices=AGE_RANGE_CHOICES, verbose_name="Age range")
+    gender_identity = models.CharField(max_length=20, blank=True, choices=GENDER_IDENTITY_CHOICES, verbose_name="Gender identity")
+    ethnicity = models.CharField(max_length=20, blank=True, choices=ETHNICITY_CHOICES, verbose_name="Ethnicity")
+    career_level = models.CharField(max_length=20, blank=True, choices=CAREER_LEVEL_CHOICES, verbose_name="Career level")
+    years_in_tech = models.CharField(max_length=10, blank=True, choices=YEARS_IN_TECH_CHOICES, verbose_name="Years in technology")
+    education_level = models.CharField(max_length=20, blank=True, choices=EDUCATION_LEVEL_CHOICES, verbose_name="Highest education level")
+    company_size = models.CharField(max_length=20, blank=True, choices=COMPANY_SIZE_CHOICES, verbose_name="Company size")
+    first_time_attendee = models.CharField(max_length=3, blank=True, choices=FIRST_TIME_CHOICES, verbose_name="Is this your first PostgreSQL conference?")
+    how_heard = models.CharField(max_length=20, blank=True, choices=HOW_HEARD_CHOICES, verbose_name="How did you hear about this conference?")
+    accessibility_needs = models.TextField(blank=True, verbose_name="Accessibility accommodations used (optional)")

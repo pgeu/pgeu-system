@@ -19,6 +19,8 @@ import postgresqleu.confreg.checkin
 import postgresqleu.confreg.twitter
 import postgresqleu.confreg.api
 import postgresqleu.confreg.upload
+import postgresqleu.confreg.visa
+import postgresqleu.confreg.survey
 import postgresqleu.confsponsor.scanning
 import postgresqleu.confwiki.views
 import postgresqleu.account.views
@@ -115,6 +117,8 @@ urlpatterns.extend([
     re_path(r'^events/([^/]+)/feedback/$', postgresqleu.confreg.views.feedback),
     re_path(r'^events/([^/]+)/feedback/(\d+)/$', postgresqleu.confreg.views.feedback_session),
     re_path(r'^events/([^/]+)/feedback/conference/$', postgresqleu.confreg.views.feedback_conference),
+    re_path(r'^events/([^/]+)/register/visa/$', postgresqleu.confreg.visa.visa_letter),
+    re_path(r'^events/([^/]+)/register/survey/$', postgresqleu.confreg.survey.diversity_survey),
     re_path(r'^events/([^/]+)/schedule/$', postgresqleu.confreg.views.schedule),
     re_path(r'^events/([^/]+)/schedule/fav/$', postgresqleu.confreg.views.schedule_favorite),
     re_path(r'^events/([^/]+)/schedule/ical/$', postgresqleu.confreg.views.schedule_ical),
@@ -183,6 +187,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/([^/]+)/reports/$', postgresqleu.confreg.views.reports),
     re_path(r'^events/admin/([^/]+)/reports/simple/$', postgresqleu.confreg.views.simple_report),
     re_path(r'^events/admin/([^/]+)/reports/feedback/$', postgresqleu.confreg.feedback.feedback_report),
+    re_path(r'^events/admin/([^/]+)/reports/diversity/$', postgresqleu.confreg.survey.diversity_survey_report),
     re_path(r'^events/admin/([^/]+)/reports/feedback/session/$', postgresqleu.confreg.feedback.feedback_sessions),
     re_path(r'^events/admin/([^/]+)/reports/schedule/$', postgresqleu.confreg.pdfschedule.pdfschedule),
     re_path(r'^events/admin/newconference/$', postgresqleu.confreg.backendviews.new_conference),
@@ -268,6 +273,8 @@ urlpatterns.extend([
     re_path(r'^events/admin/(\w+)/scheduleslots/(.*/)?$', postgresqleu.confreg.backendviews.edit_scheduleslots),
     re_path(r'^events/admin/(\w+)/volunteerslots/(.*/)?$', postgresqleu.confreg.backendviews.edit_volunteerslots),
     re_path(r'^events/admin/(\w+)/feedbackquestions/(.*/)?$', postgresqleu.confreg.backendviews.edit_feedbackquestions),
+    re_path(r'^events/admin/(\w+)/visaletters/(\d+)/generate/$', postgresqleu.confreg.visa.admin_visa_letter_generate),
+    re_path(r'^events/admin/(\w+)/visaletters/(.*/)?$', postgresqleu.confreg.backendviews.edit_visaletters),
     re_path(r'^events/admin/(\w+)/discountcodes/(.*/)?$', postgresqleu.confreg.backendviews.edit_discountcodes),
     re_path(r'^events/admin/(\w+)/messaging/(.*/)?$', postgresqleu.confreg.backendviews.edit_messaging),
     re_path(r'^events/admin/(\w+)/accesstokens/(.*/)?$', postgresqleu.confreg.backendviews.edit_accesstokens),
