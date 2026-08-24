@@ -222,7 +222,8 @@ def send_welcome_email(reg):
                          "Registration complete",
                          'confreg/mail/welcomemail.txt',
                          {
-                             'reg': reg,
+                             'reg': reg,       # Legacy compatibility.
+                             'attendee': reg,  # Same as when sending attendee email, to make it easier
                          },
                          receivername=reg.fullname,
                          attachments=attachments,
