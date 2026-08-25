@@ -51,6 +51,7 @@ class AttendeeList(BaseBenefit):
                                 r.firstname,
                                 r.email,
                                 r.company,
+                                r.city,
                                 r.country])
 
                 ret = StringIO.StringIO()

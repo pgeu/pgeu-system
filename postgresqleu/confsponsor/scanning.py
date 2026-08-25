@@ -154,9 +154,9 @@ def sponsor_scanning_download(request, sponsorid):
     response = HttpResponse(content_type='text/csv; charset=utf8')
     response['Content-Disposition'] = 'attachment;filename=scanned_users.csv'
     c = csv.writer(response)
-    c.writerow(['Attendee name', 'Attendee country', 'Attendee company', 'Attendee email', 'Scanned at', 'Scanned by', 'Scan note'])
+    c.writerow(['Attendee name', 'Attendee city', 'Attendee country', 'Attendee company', 'Attendee email', 'Scanned at', 'Scanned by', 'Scan note'])
     for s in scanned:
-        c.writerow([s.attendee.fullname, s.attendee.country, s.attendee.company, s.attendee.email, s.scannedat, s.scannedby.fullname, s.note])
+        c.writerow([s.attendee.fullname, s.attendee.city, s.attendee.country, s.attendee.company, s.attendee.email, s.scannedat, s.scannedby.fullname, s.note])
 
     return response
 
@@ -177,6 +177,7 @@ def _sponsor_scanning_page(request, scanner, extra=None):
         'scanfields': [
             ["name", "Name"],
             ["company", "Company"],
+            ["city", "City"],
             ["country", "Country"],
             ["email", "E-mail"],
         ],
@@ -256,6 +257,7 @@ def _json_response(reg, status, existingnote='', message=''):
         'reg': {
             'name': reg.fullname,
             'company': reg.company,
+            'city': reg.city,
             'country': reg.country and reg.country.printable_name or '',
             'email': reg.email,
             'note': existingnote,

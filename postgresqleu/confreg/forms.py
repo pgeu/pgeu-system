@@ -59,12 +59,29 @@ class ConferenceRegistrationForm(forms.ModelForm):
             self.fields['email'].widget.attrs['readonly'] = True
         self.fields['additionaloptions'].queryset = ConferenceAdditionalOption.objects.select_related('conference', 'conference__vat_registrations').filter(
             conference=self.instance.conference, public=True)
-        self.fields['country'].choices = self._get_country_choices()
+        if 'country' in self.fields:
+            self.fields['country'].choices = self._get_country_choices()
+
+        self.fields['address'].label = 'Invoice address'
+        if 'badgescan' in self.fields:
+            self.fields['badgescan'].label = (
+                'Allow sponsors get contact information '
+                '(name, e-mail address, city/country and company name) by scanning badge'
+            )
 
         if not self.regforother:
-            self.intro_html = mark_safe('<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(escape(self.user.username), escape(self.user.first_name), escape(self.user.last_name), escape(self.user.email)))
+            self.intro_html = mark_safe(
+                '<p>You are currently making a registration for account<br/><i>{0} ({1} {2} &lt;{3}&gt;).</i></p>'.format(
+                    escape(self.user.username),
+                    escape(self.user.first_name),
+                    escape(self.user.last_name),
+                    escape(self.user.email),
+                )
+            )
         else:
-            self.intro_html = mark_safe('<p>You are currently editing a registration for somebody other than yourself.</p>')
+            self.intro_html = mark_safe(
+                '<p>You are currently editing a registration for somebody other than yourself.</p>'
+            )
 
     def _get_country_choices(self):
         yield (None, 'Prefer not to say')
@@ -276,7 +293,7 @@ class ConferenceRegistrationForm(forms.ModelForm):
     class Meta:
         model = ConferenceRegistration
         fields = ('regtype', 'firstname', 'lastname', 'email', 'company', 'address',
-                  'country', 'phone', 'shirtsize', 'dietary', 'additionaloptions',
+                  'city', 'country', 'phone', 'shirtsize', 'dietary', 'additionaloptions',
                   'twittername', 'nick', 'pronouns', 'badgescan', 'shareemail', 'photoconsent', 'vouchercode',
         )
         widgets = {
@@ -289,7 +306,11 @@ class ConferenceRegistrationForm(forms.ModelForm):
         # Return a set of fields used for our rendering
         conf = self.instance.conference
 
-        fields = ['regtype', 'firstname', 'lastname', 'company', 'address', 'country', 'email']
+        fields = ['regtype', 'firstname', 'lastname', 'email']
+        if conf.askcity:
+            fields.append('city')
+        if conf.askcountry:
+            fields.append('country')
         if conf.askpronouns:
             fields.append('pronouns')
         if conf.asktwitter:
@@ -301,6 +322,12 @@ class ConferenceRegistrationForm(forms.ModelForm):
                'introhtml': self.intro_html,
                'fields': [self[x] for x in fields],
                }
+
+        yield {
+            'id': 'invoice_information',
+            'legend': 'Invoice information',
+            'fields': [self['company'], self['address']],
+        }
 
         if conf.asktshirt or conf.askfood or conf.askshareemail:
             fields = []
@@ -348,6 +375,11 @@ class RegistrationChangeForm(forms.ModelForm):
         for f in self.instance.conference.remove_fields:
             if f in self.fields:
                 del self.fields[f]
+        if 'badgescan' in self.fields:
+            self.fields['badgescan'].label = (
+                'Allow sponsors get contact information '
+                '(name, e-mail address, city/country and company name) by scanning badge'
+            )
         if not self.allowedit:
             for f in self.fields:
                 if f not in self.Meta.unlocked_fields:
