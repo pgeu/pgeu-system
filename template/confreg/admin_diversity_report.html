@@ -1,0 +1,43 @@
+{%extends "confreg/confadmin_base.html"%}
+{%block title%}Diversity survey report - {{conference}}{%endblock%}
+
+{%block layoutblock%}
+<h1>Diversity survey report</h1>
+<p>Aggregate, anonymous responses for <b>{{conference}}</b>. Individual answers are not stored in a way that can be linked back to attendees.</p>
+
+<p><a class="btn btn-default" href="?format=csv">Download as CSV</a></p>
+
+<div class="row">
+ <div class="col-sm-6">
+  <table class="table">
+   <tr><th>Submitted</th><td>{{submitted_count}}</td></tr>
+   <tr><th>Declined (skipped explicitly)</th><td>{{declined_count}}</td></tr>
+  </table>
+ </div>
+</div>
+
+{%for section in sections %}
+<h2>{{section.label}}</h2>
+<table class="table table-striped" style="max-width:36em;">
+ <thead><tr><th>Answer</th><th style="text-align:right;">Count</th><th style="text-align:right;">Percent</th></tr></thead>
+ <tbody>
+{%for label, count, percent in section.rows %}
+  <tr><td>{{label}}</td><td style="text-align:right;">{{count}}</td><td style="text-align:right;">{{percent}}%</td></tr>
+{%endfor%}
+ </tbody>
+</table>
+{%endfor%}
+
+<h2>Accessibility accommodations used</h2>
+{%if accessibility_notes %}
+<ul>
+{%for note in accessibility_notes %}
+ <li>{{note|linebreaksbr}}</li>
+{%endfor%}
+</ul>
+{%else %}
+<p><i>No notes provided.</i></p>
+{%endif%}
+
+<p><a href="../../">Back to admin dashboard</a></p>
+{%endblock%}

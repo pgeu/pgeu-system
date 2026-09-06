@@ -1,0 +1,43 @@
+{%extends "base.html" %}
+{%block title%}Diversity Survey - {{conference}}{%endblock%}
+{%block content%}
+<h1>Diversity Survey<span class="confheader"> - {{conference}}</span></h1>
+
+{%if already_submitted %}
+<p>You have already submitted the diversity survey for this conference. <b>Thank you!</b></p>
+<p>Your submission is anonymous and cannot be linked back to you, so it cannot be edited or removed individually.</p>
+<p><a href="../">Back to your registration dashboard.</a></p>
+
+{%else %}
+
+<div class="alert alert-info">
+  <p><b>Anonymous diversity survey.</b> This survey helps us understand who attends our conferences and improve future events. <b>Your answers are stored without any link to your identity</b> &mdash; we record that you responded (so we don't ask again), but the response itself cannot be traced back to you.</p>
+  <p>Every question is optional &mdash; every dropdown has a &ldquo;Prefer not to say&rdquo; option, and you may skip the survey entirely.</p>
+</div>
+
+{%if declined %}
+<p>You previously chose to skip this survey. You can still take it now if you've changed your mind.</p>
+{%endif%}
+
+{%if form.errors %}
+<p><b style="color:red;">Please correct the errors below.</b></p>
+{%endif%}
+<form method="post" action=".">{{ csrf_input }}
+<table>
+{%for field in form %}
+ <tr>
+  <th>{{ field.label_tag() }}</th>
+  <td>{{ field.errors }}{{ field }}
+  {%if field.help_text %}<br/><small>{{ field.help_text }}</small>{%endif%}
+  </td>
+ </tr>
+{%endfor%}
+</table>
+<p>
+ <input type="submit" value="Submit survey">
+ <input type="submit" name="skip" value="Skip &mdash; don't show me this again" formnovalidate>
+</p>
+</form>
+{%endif%}
+
+{%endblock%}

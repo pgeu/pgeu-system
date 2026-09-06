@@ -28,6 +28,9 @@
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if pending_waitlist%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/waitlist/">Waitlist</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/transfer/">Transfer registration</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if pending_cancel_requests%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/cancelrequests/">Cancellation requests</a></div>
+{%if c.visa_letter_enabled %}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if pending_visa_requests%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/visaletters/">Visa letter requests</a></div>
+{%endif%}
 </div>
 <div class="row">
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/mail/">Attendee emails</a></div>
@@ -96,6 +99,9 @@
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if sessions_roomoverlap%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=sessoverlaproom">Rooms with overlapping sessions</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn {%if sessions_notrack%}btn-warning{%else%}btn-default{%endif%} btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=sessnotrack">Sessions with no track</a></div>
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=popularsess">Most popular sessions</a></div>
+{%if c.diversity_survey_enabled %}
+  <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/diversity/">Diversity survey report</a></div>
+{%endif%}
 {%if conference.queuepartitioning %}
   <div class="col-md-3 col-sm-6 col-xs-12 buttonrow"><a class="btn btn-default btn-block" href="/events/admin/{{c.urlname}}/reports/simple/?report=queuepartitions">Queue partitions</a></div>
 {%endif%}
