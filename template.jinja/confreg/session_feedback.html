@@ -13,6 +13,7 @@
 <p>
 <b>Status: </b>{{session.lastnotified_status_string_long}}<br/>
 {%if session.track %}<b>Track: </b>{{ session.track.trackname }}<br/>{% endif %}
+{%if conference.callforpapersrecording %}<b>Recording consent: </b><i>{{ session.recordingconsent | yesno("Yes,No") }}</i><br/>{% endif %}
 </p>
 
 <p>
