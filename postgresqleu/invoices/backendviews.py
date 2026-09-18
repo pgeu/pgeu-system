@@ -369,6 +369,21 @@ def _flag_invoices(request, translist, invoices, fee_account):
 
     transaction.set_autocommit(False)
 
+    # Re-fetch invoices if something changed before we got called. And also verify
+    # that we're not processing an invoice that was flagged as paid in between.
+    for i in invoices:
+        i.refresh_from_db()
+        if i.paidat:
+            messages.error(request, 'Invoice {} has already been paid.'.format(i))
+            transaction.rollback()
+            return False
+
+    # Also refresh the bank transactions, in case they have been deleted. Yes, it's
+    # inefficient to do it one by one instead of as a single select, but we'll never
+    # be matching more than a couple at a time, so it's not that bad.
+    for t in translist:
+        t.refresh_from_db()
+
     def invoicelogger(msg):
         invoicelog.append(msg)
 
