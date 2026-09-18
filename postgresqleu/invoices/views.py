@@ -283,7 +283,7 @@ def extend_cancel(request, invoicenum):
         days = 5
 
     invoice.canceltime += timedelta(days=days)
-    invoice.save()
+    invoice.save(update_fields=['canceltime'])
 
     InvoiceHistory(invoice=invoice, txt='Extended autocancel by {0} days to {1}'.format(days, invoice.canceltime)).save()
 

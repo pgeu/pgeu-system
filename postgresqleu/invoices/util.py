@@ -393,7 +393,7 @@ class InvoiceManager(object):
         invoice.pdf_receipt = base64.b64encode(wrapper.render_pdf_receipt()).decode('ascii')
 
         # Save and we're done!
-        invoice.save()
+        invoice.save(update_fields=['paidat', 'paymentdetails', 'paidusing', 'pdf_receipt'])
 
         # Create an accounting entry for this invoice. If we have the required
         # information on the invoice, we can finalize it. If not, we will
@@ -497,7 +497,7 @@ class InvoiceManager(object):
 
         invoice.deleted = True
         invoice.deletion_reason = reason
-        invoice.save()
+        invoice.save(update_fields=['deleted', 'deletion_reason'])
 
         InvoiceHistory(invoice=invoice, txt='Canceled by {}'.format(who)).save()
 
@@ -741,7 +741,7 @@ if available).
         # Else we need to extend it, so do it
         oldtime = invoice.canceltime
         invoice.canceltime = timezone.now() + mintime
-        invoice.save()
+        invoice.save(update_fields=['canceltime'])
 
         InvoiceHistory(invoice=invoice, txt='Extended until {0}: {1}'.format(invoice.canceltime, reason)).save()
 
