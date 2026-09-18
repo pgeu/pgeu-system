@@ -386,7 +386,7 @@ def _flag_invoices(request, translist, invoices, fee_account):
             for t in translist
         ]
     else:
-        txt = "Bank transfer from method {0} with id {1}, manually matched".format(translist[0].method.id, translist[0].methodidentifier),
+        txt = "Bank transfer from method {0} with id {1}, manually matched".format(translist[0].method.id, translist[0].methodidentifier)
         override_accounting_income_rows = None
 
     if len(invoices) == 1 and len(translist) == 1:
