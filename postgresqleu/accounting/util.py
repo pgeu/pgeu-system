@@ -133,7 +133,7 @@ def get_latest_account_balance(accountid):
   UNION ALL VALUES (0,0)
   ORDER BY year_id DESC LIMIT 1
 )
-SELECT sum(amount)+COALESCE((SELECT incoming_amount FROM incoming_balance),0)
+SELECT COALESCE(sum(amount), 0) + COALESCE((SELECT incoming_amount FROM incoming_balance),0)
  FROM accounting_journalitem ji INNER JOIN accounting_journalentry je ON ji.journal_id=je.id
   WHERE account_id=%(account)s
    AND  je.year_id >= (SELECT incoming_year FROM incoming_balance)""",
