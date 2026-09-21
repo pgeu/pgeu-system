@@ -15,7 +15,7 @@ from postgresqleu.util.decorators import global_login_exempt
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.invoices.util import InvoiceManager
 
-from .models import RawNotification, AdyenLog, ReturnAuthorizationStatus
+from .models import RawNotification, AdyenLog, ReturnAuthorizationStatus, AdyenInvoicePaymentLink
 from .util import process_raw_adyen_notification
 
 
@@ -84,7 +84,16 @@ def _invoice_payment(request, methodid, invoice, trailer):
     else:
         methods = ['card', 'googlepay', 'applepay']
 
-    # Not the return handler, so use the Adyen checkout API to build a payment link.
+    # Not the return handler, so use the Adyen checkout API to build a payment link (or re-use an existing one and it is not just about to expire)
+    if link := AdyenInvoicePaymentLink.objects.filter(
+            invoice=invoice,
+            paymentmethod=method,
+            expires__gt=timezone.now() - timedelta(minutes=30),
+            forceexpire=False,
+    ).first():
+        AdyenLog(pspReference='', message='Redirected to existing payment link {}'.format(link.linkid), paymentmethod=method).save()
+        return HttpResponseRedirect(link.url)
+
     p = {
         'reference': '{}{}'.format(pm.config('merchantref_prefix'), invoice.id),
         'amount': {
@@ -97,7 +106,11 @@ def _invoice_payment(request, methodid, invoice, trailer):
         'returnUrl': '{}/invoices/adyenpayment/{}/{}/{}/return/'.format(settings.SITEBASE, methodid, invoice.id, invoice.recipient_secret),
     }
     if invoice.canceltime and invoice.canceltime < timezone.now() + timedelta(hours=24):
-        p['expiresAt']: invoice.canceltime.isoformat(timespec='seconds')
+        linkexpires = invoice.canceltime
+    else:
+        # Default of Adyen is 24 hours, but make it explicit just to be sure
+        linkexpires = timezone.now() + timedelta(hours=24)
+    p['expiresAt']: linkexpires.isoformat(timespec='seconds')
 
     try:
         r = requests.post(
@@ -113,6 +126,16 @@ def _invoice_payment(request, methodid, invoice, trailer):
             return HttpResponse('Failed to create payment link. Please try again later.')
 
         j = r.json()
+
+        AdyenInvoicePaymentLink.objects.update_or_create(
+            invoice=invoice,
+            paymentmethod=method,
+            defaults={
+                'expires': linkexpires,
+                'linkid': j['id'],
+                'url': j['url'],
+            }
+        )
 
         AdyenLog(pspReference='', message='Created payment link {} for invoice {}'.format(j['id'], invoice.id), error=False, paymentmethod=method).save()
 

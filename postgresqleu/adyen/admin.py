@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 from django.urls import reverse
 
 from .models import RawNotification, Notification
-from .models import Report, TransactionStatus, AdyenLog, Refund
+from .models import Report, TransactionStatus, AdyenLog, Refund, AdyenInvoicePaymentLink
 
 
 class RawNotificationAdmin(admin.ModelAdmin):
@@ -133,9 +133,14 @@ class AdyenLogAdmin(admin.ModelAdmin):
     sentstr.short_description = 'Log sent'
 
 
+class AdyenInvoicePaymentLinkAdmin(admin.ModelAdmin):
+    list_display = ('linkid', 'expires', 'paymentmethod', )
+
+
 admin.site.register(RawNotification, RawNotificationAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(TransactionStatus, TransactionStatusAdmin)
 admin.site.register(Refund, RefundAdmin)
 admin.site.register(AdyenLog, AdyenLogAdmin)
+admin.site.register(AdyenInvoicePaymentLink, AdyenInvoicePaymentLinkAdmin)

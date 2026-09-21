@@ -111,7 +111,7 @@ INSTALLED_APPS = [
     'postgresqleu.scheduler.apps.SchedulerAppConfig',
     'postgresqleu.digisign',
     'postgresqleu.paypal',
-    'postgresqleu.adyen',
+    'postgresqleu.adyen.apps.AdyenAppConfig',
     'postgresqleu.newsevents',
     'postgresqleu.confreg',
     'postgresqleu.confsponsor.apps.ConfsponsorAppConfig',

@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from decimal import Decimal
+from datetime import timedelta
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -13,8 +14,10 @@ from postgresqleu.invoices.util import InvoiceManager
 from postgresqleu.invoices.models import Invoice, InvoicePaymentMethod
 from postgresqleu.accounting.util import create_accounting_entry
 from postgresqleu.util.currency import format_currency
+from postgresqleu.scheduler.util import trigger_immediate_job_run
 
 from .models import TransactionStatus, Report, AdyenLog, Notification, Refund
+from .models import AdyenInvoicePaymentLink
 
 
 # Internal exception class
@@ -478,3 +481,26 @@ class AdyenAPI(object):
             raise Exception("response returned: {0}".format(r['response']))
 
         return r
+
+
+#
+# Called when the canceled_invoice signal fires
+#
+def canceled_invoice_handler(sender, **kwargs):
+    invoice = kwargs.pop('invoice')
+
+    # Force-expire this payment link(s) if the invoice is canceled.
+    # Cancel-by-time normally won't cause this to happen as it already
+    # expires in Adyen, but if we manually cancel an invoice we wan to
+    # get rid of the old payment link.
+    #
+    # We only need to set it to force-expire if not already expiring
+    # within a few seconds, this way we avoid force expiring things in
+    # most cases.  We expire by setting the expiry time an hour in the
+    # past and then firing the normal job.
+    AdyenInvoicePaymentLink.objects.filter(
+        invoice=invoice,
+        expires__gt=timezone.now() + timedelta(seconds=10),
+    ).update(expires=timezone.now() - timedelta(hours=1), forceexpire=True)
+
+    trigger_immediate_job_run('adyen_expire_payment_links', timedelta(seconds=10))

@@ -93,3 +93,20 @@ class AdyenLog(models.Model):
     error = models.BooleanField(null=False, blank=False, default=False)
     sent = models.BooleanField(null=False, blank=False, default=False)
     paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
+
+
+class AdyenInvoicePaymentLink(models.Model):
+    invoice = models.OneToOneField(to='invoices.Invoice', on_delete=models.RESTRICT)
+    paymentmethod = models.ForeignKey(InvoicePaymentMethod, blank=False, null=False, on_delete=models.CASCADE)
+    expires = models.DateTimeField(null=False, blank=False)
+    linkid = models.CharField(max_length=100, null=False, blank=False)
+    url = models.URLField(null=False, blank=False)
+    forceexpire = models.BooleanField(null=False, blank=False, default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['invoice', 'paymentmethod'], name='unique_invoice_paymentmethod'),
+        ]
+
+    def __str__(self):
+        return self.linkid
