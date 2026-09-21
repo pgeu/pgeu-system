@@ -3623,6 +3623,7 @@ def admin_dashboard_single(request, urlname):
             'pending_tweets': ConferenceTweetQueue.objects.filter(conference=conference, sent=False).exists(),
             'pending_tweet_approvals': ConferenceTweetQueue.objects.filter(conference=conference, approved=False).exists(),
             'pending_cancel_requests': ConferenceRegistration.objects.filter(conference=conference, cancelrequestedat__isnull=False, canceledat__isnull=True),
+            'pending_visa_requests': conditional_exec_to_scalar(conference.visa_letter_enabled, "SELECT EXISTS (SELECT 1 FROM confreg_visaletterrequest WHERE conference_id=%(confid)s AND status='pending')", {'confid': conference.id}),
         })
 
 
