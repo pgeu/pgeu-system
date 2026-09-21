@@ -23,6 +23,8 @@ from .models import InvoicePaymentMethod, PaymentMethodWrapper
 from .models import PendingBankTransaction, PendingBankMatcher
 from postgresqleu.accounting.models import Account
 
+from .signals import invoice_canceled
+
 
 # Proxy around an invoice that adds presentation information,
 # such as the ability to render a return URL for the invoice.
@@ -507,6 +509,8 @@ class InvoiceManager(object):
         wrapper.email_cancellation(reason)
 
         InvoiceLog(timestamp=timezone.now(), message="Deleted invoice %s (deleted by %s): %s" % (invoice.id, who, invoice.deletion_reason)).save()
+
+        invoice_canceled.send(sender=self.__class__, invoice=invoice)
 
     def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
         # Initiate a refund of an invoice if there is a payment provider that supports it.
