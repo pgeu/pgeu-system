@@ -17,7 +17,7 @@ from decimal import Decimal
 
 
 class Command(BaseCommand):
-    help = 'Verify Gocardless balancse'
+    help = 'Verify Gocardless balances'
 
     class ScheduledJob:
         scheduled_times = [datetime.time(3, 35), ]

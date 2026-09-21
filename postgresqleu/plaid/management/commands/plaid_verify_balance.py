@@ -17,7 +17,7 @@ from decimal import Decimal
 
 
 class Command(BaseCommand):
-    help = 'Verify Plaid balancse'
+    help = 'Verify Plaid balances'
 
     class ScheduledJob:
         scheduled_times = [datetime.time(3, 25), ]
