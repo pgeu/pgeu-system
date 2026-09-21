@@ -31,6 +31,7 @@ payment_implementations = [
     'postgresqleu.util.payment.banktransfer.GenericManagedBankPayment',
     'postgresqleu.util.payment.plaid.Plaid',
     'postgresqleu.util.payment.gocardless.Gocardless',
+    'postgresqleu.util.payment.qonto.Qonto',
 ]
 
 

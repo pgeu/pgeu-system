@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     'postgresqleu.transferwise',
     'postgresqleu.plaid',
     'postgresqleu.gocardless',
+    'postgresqleu.qonto',
     'postgresqleu.membership',
     'postgresqleu.elections',
 ]
