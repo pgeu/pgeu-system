@@ -512,6 +512,14 @@ class InvoiceManager(object):
 
         invoice_canceled.send(sender=self.__class__, invoice=invoice)
 
+    def timeout_cancel(self, invoice):
+        if invoice.canceltime and invoice.canceltime < timezone.now():
+            self.cancel_invoice(invoice,
+                                "Invoice was automatically canceled because payment was not received on time.",
+                                "system")
+            return True
+        return False
+
     def refund_invoice(self, invoice, reason, amount, vatamount, vatrate):
         # Initiate a refund of an invoice if there is a payment provider that supports it.
         # Otherwise, flag the invoice as refunded, and assume the user took care of it manually.

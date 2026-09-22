@@ -421,14 +421,8 @@ def register(request, confname, whatfor=None):
 
     if reg.invoice and not reg.payconfirmedat:
         # Pending invoice exists. See if it should be canceled.
-        if reg.invoice.canceltime and reg.invoice.canceltime < timezone.now():
-            # Yup, should be canceled
-            manager = InvoiceManager()
-            manager.cancel_invoice(reg.invoice,
-                                   "Invoice was automatically canceled because payment was not received on time.",
-                                   "system")
-
-            # cancel_invoice will call the processor to unlink the invoice,
+        if InvoiceManager().timeout_cancel(reg.invoice):
+            # timeout_cancel will call the processor to unlink the invoice,
             # so make sure we refresh the object.
             reg = ConferenceRegistration.objects.get(id=reg.id)
 
@@ -2622,12 +2616,8 @@ def invoice(request, confname, regid):
         # happen, just redirect back.
         return HttpResponseRedirect('../../')
 
-    if reg.invoice.canceltime and reg.invoice.canceltime < timezone.now() and not reg.payconfirmedat:
-        # Yup, should be canceled
-        manager = InvoiceManager()
-        manager.cancel_invoice(reg.invoice,
-                               "Invoice was automatically canceled because payment was not received on time.",
-                               "system")
+    if InvoiceManager().timeout_cancel(reg.invoice) and not reg.payconfirmedat:
+        # Canceled because not paid on time
         return HttpResponseRedirect('../../')
 
     return render_conference_response(request, conference, 'reg', 'confreg/invoice.html', {
