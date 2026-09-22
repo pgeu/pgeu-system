@@ -389,6 +389,9 @@ def viewinvoice(request, invoiceid):
         # End users can only view their own invoices, but invoice managers can view all
         authenticate_backend_group(request, 'Invoice managers')
 
+    if InvoiceManager().timeout_cancel(invoice):
+        return HttpResponse("This invoice has been canceled.")
+
     return render(request, 'invoices/userinvoice.html', {
         'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/" % (settings.SITEBASE, invoice.pk)),
     })
@@ -396,6 +399,10 @@ def viewinvoice(request, invoiceid):
 
 def viewinvoice_secret(request, invoiceid, invoicesecret):
     invoice = get_object_or_404(Invoice, pk=invoiceid, deleted=False, finalized=True, recipient_secret=invoicesecret)
+
+    if InvoiceManager().timeout_cancel(invoice):
+        return HttpResponse("This invoice has been canceled.")
+
     return render(request, 'invoices/userinvoice.html', {
         'invoice': InvoicePresentationWrapper(invoice, "%s/invoices/%s/%s/" % (settings.SITEBASE, invoice.pk, invoice.recipient_secret)),
         'fromsecret': True,

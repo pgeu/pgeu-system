@@ -957,6 +957,9 @@ def multireg_bulkview(request, confname, bulkid):
             return render_conference_response(request, conference, 'reg', 'confreg/closed.html')
 
     bp = get_object_or_404(BulkPayment, conference=conference, pk=bulkid, user=request.user)
+    if bp.invoice and InvoiceManager().timeout_cancel(bp.invoice):
+        # Return a 404, since the invoice processor will have deleted the bulk payment
+        raise Http404()
 
     return render_conference_response(request, conference, 'reg', 'confreg/regmulti_bulk.html', {
         'bulkpayment': bp,
