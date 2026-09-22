@@ -81,6 +81,7 @@ correction.</p>
     </div>
     <div class="regright">
       {% if f.errors %}{{ f.errors}}{% endif %}
+      {% if f.help_text %}<div>{{f.help_text}}</div>{% endif %}
     </div>
   </div>
   {%endfor%}
@@ -100,4 +101,3 @@ correction.</p>
  <button type="submit" name="submit" class="pgeu-confirm-cancel-registration-button" value="Cancel registration">Cancel registration</button><br/>
 </form>
 {%endblock%}
-
