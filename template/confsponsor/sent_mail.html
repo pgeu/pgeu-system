@@ -1,4 +1,5 @@
 {%extends "confreg/confadmin_base.html" %}
+{%load pgmarkdown%}
 {%block title%}Conference Sponsor Email - {{conference}}{%endblock%}
 {%block extrahead%}
 <style>
@@ -33,9 +34,7 @@ tr.error {
  </tr>
 </table>
 
-<pre>
-{{mail.message}}
-</pre>
+{{mail.message|markdown}}
 
 <a href="/events/sponsor/admin/{{conference.urlname}}/" class="btn btn-default btn-block">Back to sponsors</a>
 
