@@ -155,7 +155,7 @@ class ReportFilter(object):
         self.queryset = queryset
         self.querysetcol = querysetcol
         self.emptyasnull = emptyasnull
-        if self.queryset:
+        if self.queryset is not None:
             self.type = 'select'
         else:
             self.type = 'string'
