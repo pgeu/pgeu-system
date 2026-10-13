@@ -47,7 +47,7 @@ def home(request):
 
     cfg = get_config()
 
-    if member.activeinvoice and InvoiceManager().cancel_timeout(member.activeinvoice):
+    if member.activeinvoice and InvoiceManager().timeout_cancel(member.activeinvoice):
         member.refresh_from_db()
 
     if request.method == "POST":
