@@ -513,6 +513,10 @@ class InvoiceManager(object):
         invoice_canceled.send(sender=self.__class__, invoice=invoice)
 
     def timeout_cancel(self, invoice):
+        if invoice.ispaid:
+            # If it's already paid, we certainly don't want to cancel it
+            return False
+
         if invoice.canceltime and invoice.canceltime < timezone.now():
             self.cancel_invoice(invoice,
                                 "Invoice was automatically canceled because payment was not received on time.",
