@@ -211,7 +211,7 @@ def volunteer_twitter(request, urlname, token):
                     # an order of magnitude), so we base it on that and just fail again if that didn't
                     # work.
                     rescalefactor = MAXIMAGESIZE / len(t.image)
-                    newimg = image.resize((int(image.size[0] * rescalefactor), int(image.size[1] * rescalefactor)), Image.ANTIALIAS)
+                    newimg = image.resize((int(image.size[0] * rescalefactor), int(image.size[1] * rescalefactor)), Image.LANCZOS)
                     b = io.BytesIO()
                     newimg.save(b, image.format)
                     t.image = b.getvalue()
