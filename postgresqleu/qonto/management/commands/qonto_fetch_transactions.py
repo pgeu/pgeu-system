@@ -22,6 +22,7 @@ class Command(BaseCommand):
 
     class ScheduledJob:
         scheduled_times = [
+            time(3, 0),
             time(9, 30),
             time(13, 30),
             time(18, 30),
