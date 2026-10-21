@@ -279,7 +279,7 @@ def filter_svgparagraph(value, linelength, x, y, dy, parady):
                 _dy = dy
                 if i == 0 and j != 0:
                     _dy += parady
-                yield '<tspan x="{}" dy="{}">{}</tspan>'.format(x, _dy, jinja2.escape(l))
+                yield '<tspan x="{}" dy="{}">{}</tspan>'.format(x, _dy, markupsafe.escape(l))
 
     return '<text x="{}" y="{}">{}</text>'.format(x, y, "\n".join(_svgparagraph()))
 
