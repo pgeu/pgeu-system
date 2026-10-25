@@ -27,6 +27,7 @@ LINKEDIN_SCOPE = 'r_organization_social,w_organization_social'
 class LinkedinBackendForm(BackendSeriesMessagingForm):
     linkedininfo = forms.CharField(widget=StaticTextWidget, label="Account information", required=False)
     pageid = forms.IntegerField(required=True, help_text="The id number of the page to post to. Can be retrieved from the URL of the page.", label='Page ID')
+    registeredby = forms.CharField(required=False, help_text="The user that has done the registration. Since there is no way to get this data back from LinkedIN, storing information about the user here will make it easier to know where to go when refreshing the authentication.", label="Registered by")
 
     exclude_fields_from_validation = ['linkedininfo', ]
 
@@ -34,7 +35,7 @@ class LinkedinBackendForm(BackendSeriesMessagingForm):
     def config_fields(self):
         f = ['linkedininfo', ]
         if self.instance.config.get('token', None):
-            return f + ['pageid', ]
+            return f + ['pageid', 'registeredby', ]
         else:
             return f
 

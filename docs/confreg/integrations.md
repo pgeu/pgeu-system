@@ -436,6 +436,10 @@ each conference series. Other than the normal fields, there will be a
 field for the `Page id` to connec tto. This is the numeric id found in
 the URL of the page when vieing the page in admin mode.
 
+Note that each page must be authenticated from a *different
+user*. Authenticating a second page from the same user will
+de-authenticate the first one.
+
 Linkedin access tokens expire after 2 months, but will be
 automatically refreshed. However, refresh tokens also expire after 12
 months, and at that point a manual re-authentication must be done.
