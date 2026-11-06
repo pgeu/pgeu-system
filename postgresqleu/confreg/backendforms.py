@@ -659,6 +659,9 @@ class BackendTrackForm(BackendForm):
                       fgcolor=source.fgcolor,
                       sortkey=source.sortkey,
                       incfp=source.incfp,
+                      insessionlist=source.insessionlist,
+                      showcompany=source.showcompany,
+                      speakerreg=source.speakerreg,
                 ).save()
 
 
