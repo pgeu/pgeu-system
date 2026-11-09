@@ -212,6 +212,7 @@ urlpatterns.extend([
     re_path(r'^events/admin/(\w+)/regdashboard/list/(\d+)/log/$', postgresqleu.confreg.views.admin_registration_log),
     re_path(r'^events/admin/(\w+)/regdashboard/list/(\d+)/edit/$', postgresqleu.confreg.backendviews.edit_registration),
     re_path(r'^events/admin/(\w+)/regdashboard/list/(\d+)/cancel/$', postgresqleu.confreg.views.admin_registration_cancel),
+    re_path(r'^events/admin/(\w+)/regdashboard/list/(\d+)/undocheckin/$', postgresqleu.confreg.views.admin_registration_undocheckin),
     re_path(r'^events/admin/(\w+)/regdashboard/list/multicancel/$', postgresqleu.confreg.views.admin_registration_multicancel),
     re_path(r'^events/admin/(\w+)/regdashboard/list/multiresendwelcome/$', postgresqleu.confreg.views.admin_registration_multiresendwelcome),
     re_path(r'^events/admin/(\w+)/regdashboard/list/multiviewbadge/$', postgresqleu.confreg.backendviews.view_multi_registration_badge),

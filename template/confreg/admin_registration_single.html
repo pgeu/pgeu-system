@@ -322,6 +322,9 @@
 {%if reg.regtype and reg.can_edit and not reg.payconfirmedat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/confirm/">Confirm registration</a>
 {%endif%}
+{%if reg.checkedinat %}
+<a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/regdashboard/list/{{reg.id}}/undocheckin/">Undo checkin of registration</a>
+{% endif %}
 {%if reg.payconfirmedat and not reg.canceledat %}
 <a class="btn btn-default btn-block" href="/events/admin/{{conference.urlname}}/transfer?fromid={{reg.id}}">Transfer registration</a>
 {%endif%}

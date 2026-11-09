@@ -1888,6 +1888,13 @@ class ConfirmRegistrationForm(django.forms.Form):
 
 
 #
+# Form for undoing checkin of a registration
+#
+class UndoCheckinForm(django.forms.Form):
+    confirm = django.forms.BooleanField(help_text="Confirm that you want to undo the checkin of this registration, returning it to pending status.")
+
+
+#
 # Form for re-sending welcome email
 #
 class ResendWelcomeMailForm(django.forms.Form):

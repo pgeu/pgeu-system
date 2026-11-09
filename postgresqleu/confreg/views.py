@@ -64,7 +64,7 @@ from .jinjafunc import render_jinja_conference_mail
 from .jinjafunc import render_sandboxed_template
 from .jinjapdf import render_jinja_ticket
 from .util import get_authenticated_conference, get_conference_or_404
-from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm
+from .backendforms import CancelRegistrationForm, ConfirmRegistrationForm, UndoCheckinForm
 from .backendforms import ResendWelcomeMailForm, ResendAttachMailForm
 from .twitter import create_twitterpost_thumbnail
 
@@ -4156,6 +4156,44 @@ def admin_registration_confirm(request, urlname, regid):
         'what': 'registration',
         'cancelurl': '../',
         'savebutton': 'Confirm registration',
+    })
+
+
+@transaction.atomic
+def admin_registration_undocheckin(request, urlname, regid):
+    conference = get_authenticated_conference(request, urlname)
+    reg = get_object_or_404(ConferenceRegistration, id=regid, conference=conference)
+
+    if not reg.checkedinat:
+        messages.error(request, "Registration is not checked in")
+        return HttpResponseRedirect("../")
+
+    if request.method == 'POST':
+        form = UndoCheckinForm(data=request.POST)
+        if form.is_valid():
+            reg.checkedinat = None
+            reg.checkedinby = None
+            reg.save(update_fields=['checkedinat', 'checkedinby'])
+            reglog(reg, "Registration checkin undone", request.user)
+            return HttpResponseRedirect("../")
+    else:
+        form = UndoCheckinForm()
+
+    return render(request, 'confreg/admin_backend_form.html', {
+        'basetemplate': 'confreg/confadmin_base.html',
+        'conference': conference,
+        'reg': reg,
+        'form': form,
+        'helplink': 'registrations',
+        'breadcrumbs': (
+            ('/events/admin/{0}/regdashboard/'.format(urlname), 'Registration dashboard'),
+            ('/events/admin/{0}/regdashboard/list/'.format(urlname), 'Registration list'),
+            ('/events/admin/{0}/regdashboard/list/{1}/'.format(urlname, reg.id), reg.fullname),
+        ),
+        'whatverb': 'Undo',
+        'what': 'checkin',
+        'cancelurl': '../',
+        'savebutton': 'Undo checkin',
     })
 
 
