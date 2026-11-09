@@ -675,6 +675,7 @@ class ConferenceRegistration(models.Model):
     shareemail = models.BooleanField(null=False, blank=False, default=False, verbose_name="Share e-mail address with sponsors")
     photoconsent = models.BooleanField(null=True, blank=False, verbose_name="Consent to having your photo taken at the event by the organisers")
     localoptout = models.BooleanField(null=False, blank=False, default=False, verbose_name="Opt out of emails (when not connected to an account)")
+    feedbackstored = models.DateTimeField(null=False, blank=False, auto_now=True, verbose_name="Feedback stored")
 
     # Admin fields!
     policyconfirmedat = models.DateTimeField(null=True, blank=True, verbose_name="Policy confirmed at")
@@ -1357,6 +1358,7 @@ class ConferenceSessionFeedback(models.Model):
     conference = models.ForeignKey(Conference, null=False, blank=False, on_delete=models.CASCADE)
     session = models.ForeignKey(ConferenceSession, null=False, blank=False, on_delete=models.CASCADE)
     attendee = models.ForeignKey(User, null=False, blank=False, on_delete=models.CASCADE)
+    stored = models.DateTimeField(null=False, blank=False, auto_now=True)
     topic_importance = models.IntegerField(null=False, blank=False)
     content_quality = models.IntegerField(null=False, blank=False)
     speaker_knowledge = models.IntegerField(null=False, blank=False)

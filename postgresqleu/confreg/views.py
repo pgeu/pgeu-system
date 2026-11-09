@@ -1272,6 +1272,7 @@ def feedback_session(request, confname, sessionid):
 @transaction.atomic
 def feedback_conference(request, confname):
     conference = get_conference_or_404(confname)
+    reg = get_object_or_404(ConferenceRegistration, conference=conference, attendee=request.user)
 
     if not conference.feedbackopen:
         # Allow conference testers to override
@@ -1295,6 +1296,8 @@ def feedback_conference(request, confname):
                 else:
                     a.rateanswer = form.cleaned_data['question_%s' % q.id]
                 a.save()
+            reg.feedbackstored = timezone.now()
+            reg.save(update_fields=['feedbackstored'])
             return HttpResponseRedirect('..')
     else:
         form = ConferenceFeedbackForm(questions=questions, responses=responses)
