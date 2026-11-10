@@ -172,8 +172,8 @@ class Command(BaseCommand):
                         create_accounting_entry(accrows)
                 elif trans.transtype == 'BALANCE_CASHBACK' and pm.config('accounting_cashback'):
                     accrows = [
-                        (pm.config('bankaccount'), trans.paymentref, trans.amount, None),
-                        (pm.config('accounting_cashback'), trans.paymentref, -trans.amount, None),
+                        (pm.config('bankaccount'), 'Cashback (interest)', trans.amount, None),
+                        (pm.config('accounting_cashback'), 'Cashback (interest)', -trans.amount, None),
                     ]
                     create_accounting_entry(accrows)
                 else:
