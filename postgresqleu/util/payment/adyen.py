@@ -19,6 +19,7 @@ from . import BasePayment
 
 class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
     merchantaccount = forms.CharField(required=True, label="Merchant account")
+    posmerchantaccount = forms.CharField(required=False, label="POS Merchant account")
     test = forms.BooleanField(required=False, label="Testing system")
 
     apibaseurl = forms.CharField(required=True, label="API Base URL",
@@ -54,17 +55,27 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
                                            label="Pending refunds account")
     accounting_payout = forms.ChoiceField(required=True, choices=get_account_choices,
                                           label="Payout account")
+    accounting_autopos = forms.ChoiceField(required=True, choices=[
+        (1, 'Create empty accounting record'),
+        (2, 'Create complete accounting record, leave open'),
+        (3, 'Create and close complete accounting record'),
+    ], label="POS accounting method")
+    accounting_posaccount = forms.ChoiceField(required=False, choices=[(None, '---')] + get_account_choices(),
+                                              label="Account for automatic POS accounting")
+    accounting_autotext = forms.CharField(required=False, label='Text for automatic POS accounting accounting',
+                                          help_text='Text to use to complete accounting records for POS transactions. Use "$$" to include merchant reference and "%%" to include adyen reference".')
 
     notifications = forms.CharField(widget=StaticTextWidget)
     returnurl = forms.CharField(label="Return URL", widget=StaticTextWidget)
 
-    config_fields = ['merchantaccount', 'test',
+    config_fields = ['merchantaccount', 'posmerchantaccount', 'test',
                      'apibaseurl', 'checkoutbaseurl', 'ws_user', 'ws_password', 'ws_apikey',
                      'report_user', 'report_password',
                      'notify_user', 'notify_password',
                      'notification_receiver', 'merchantref_prefix', 'merchantref_refund_prefix',
                      'accounting_authorized', 'accounting_payable', 'accounting_merchant',
                      'accounting_fee', 'accounting_refunds', 'accounting_payout',
+                     'accounting_posaccount', 'accounting_autopos', 'accounting_autotext',
                      'notifications', 'returnurl', ]
     config_readonly = ['notifications', 'returnurl', ]
 
@@ -72,7 +83,7 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
         {
             'id': 'adyen',
             'legend': 'Adyen',
-            'fields': ['merchantaccount', 'test', ],
+            'fields': ['merchantaccount', 'posmerchantaccount', 'test', ],
         },
         {
             'id': 'api',
@@ -89,7 +100,8 @@ class BackendAdyenCreditCardForm(BackendInvoicePaymentMethodForm):
             'id': 'accounting',
             'legend': 'Accounting',
             'fields': ['accounting_authorized', 'accounting_payable', 'accounting_merchant',
-                       'accounting_fee', 'accounting_refunds', 'accounting_payout'],
+                       'accounting_fee', 'accounting_refunds', 'accounting_payout',
+                       'accounting_autopos', 'accounting_posaccount', 'accounting_autotext'],
         },
         {
             'id': 'adyenconf',
@@ -119,6 +131,18 @@ a new version of the skin.
                     self.instance.id,
                 ),
             })
+
+    def clean(self):
+        data = super().clean()
+        if int(data['accounting_autopos']) > 1:
+            if not data['posmerchantaccount']:
+                self.add_error('posmerchantaccount', 'POS merchant account must be specified when creating complete accounting records')
+            if not data['accounting_posaccount']:
+                self.add_error('accounting_posaccount', 'POS account must be specified when creating complete accounting records')
+            if not data['accounting_autotext']:
+                self.add_error('accounting_autotext', 'Accounting text must be specified when creating complete accounting records')
+
+        return data
 
 
 def _get_merchantaccount_choices():

@@ -53,31 +53,57 @@ def process_authorization(notification):
 
         # We can receive authorizations on non-primary Adyen merchant
         # accounts. This happens for example with payments from POS
-        # terminals. In those cases, just send an email, and don't
-        # try to match it to any invoices.
-        # We still store and track the transaction.
+        # terminals.
         if notification.merchantAccountCode != pm.config('merchantaccount'):
-            send_simple_mail(settings.INVOICE_SENDER_EMAIL,
-                             pm.config('notification_receiver'),
-                             'Manual Adyen payment authorized',
-                             "An Adyen payment of %s was authorized on the Adyen platform for %s.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (
-                                 format_currency(notification.amount),
-                                 method.internaldescription,
-                                 notification.merchantReference,
-                                 notification.pspReference,
-                                 notification.merchantAccountCode))
-            notification.confirmed = True
-            notification.save()
+            if notification.merchantAccountCode == pm.config('posmerchantaccount'):
+                # Payment incoming from our registered POS account
+                send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                                 pm.config('notification_receiver'),
+                                 'Adyen POS payment authorized',
+                                 "An Adyen payment of %s was authorized using a POS terminal for %s.\n\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (
+                                     format_currency(notification.amount),
+                                     method.internaldescription,
+                                     notification.merchantReference,
+                                     notification.pspReference,
+                                     notification.merchantAccountCode))
+                notification.confirmed = True
+                notification.save()
 
-            # For manual payments, we can only create an open-ended entry
-            # in the accounting
+                autopos = int(pm.config('accounting_autopos', '1'))
+                if autopos in (2, 3):  # Create a complete record, with or without closing it
+                    accstr = pm.config('accounting_autotext', '').replace('$$', notification.merchantReference).replace('%%', notification.pspReference)
+                    accrows = [
+                        (pm.config('accounting_authorized'), accstr, trans.amount, None),
+                        (pm.config('accounting_posaccount'), accstr, -trans.amount, None),
+                    ]
+                else:  # Create incomplete record, and don't close it
+                    accstr = "Adyen POS payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
+                    accrows = [
+                        (pm.config('accounting_authorized'), accstr, trans.amount, None),
+                    ]
 
-            accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
-            accrows = [
-                (pm.config('accounting_authorized'), accstr, trans.amount, None),
-            ]
+                create_accounting_entry(accrows, autopos != 3, urls)
+            else:
+                # Payment from unknown merchant account
+                send_simple_mail(settings.INVOICE_SENDER_EMAIL,
+                                 pm.config('notification_receiver'),
+                                 'Manual Adyen payment authorized',
+                                 "An Adyen payment of %s was authorized on the Adyen platform for %s.\nThis payment was not from the automated system, it was manually authorized, probably from a POS terminal.\nReference: %s\nAdyen reference: %s\nMerchant account: %s\n" % (
+                                     format_currency(notification.amount),
+                                     method.internaldescription,
+                                     notification.merchantReference,
+                                     notification.pspReference,
+                                     notification.merchantAccountCode))
+                notification.confirmed = True
+                notification.save()
 
-            create_accounting_entry(accrows, True, urls)
+                accstr = "Manual Adyen payment: %s (%s)" % (notification.merchantReference, notification.pspReference)
+                accrows = [
+                    (pm.config('accounting_authorized'), accstr, trans.amount, None),
+                ]
+
+                create_accounting_entry(accrows, True, urls)
+
             return
 
         # Process a payment on the primary account
