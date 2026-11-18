@@ -55,7 +55,12 @@ at {{conference.contactaddr}}.
   <tr><td class="firstcol">Last name</td><td>{{reg.lastname}}</td></tr>
   <tr><td class="firstcol">Company</td><td>{{reg.company}}</td></tr>
   <tr><td class="firstcol">Address</td><td>{{"<br>".join(reg.address.splitlines())}}</td></tr>
+{%if conference.askcity%}
+  <tr><td class="firstcol">City</td><td>{{reg.city}}</td></tr>
+{%endif%}
+{%if conference.askcountry%}
   <tr><td class="firstcol">Country</td><td>{{reg.country}}</td></tr>
+{%endif%}
   <tr><td class="firstcol">Email</td><td>{{reg.email}}</td></tr>
   <tr><td class="firstcol">Phone</td><td>{{reg.phone}}</td></tr>
 {%if conference.asktwitter%}
@@ -98,4 +103,3 @@ at {{conference.contactaddr}}.
 
 
 {%endblock%}
-

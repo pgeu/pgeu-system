@@ -45,6 +45,7 @@
 <table class="table table-striped table-hover table-sm">
   <tr>
     <th>Name</th>
+    <th>City</th>
     <th>Country</th>
     <th>Company</th>
     <th>Email</th>
@@ -56,6 +57,7 @@
 {%for a in scanned%}
   <tr>
     <td>{{a.attendee.fullname}}</td>
+    <td>{{a.attendee.city|default:""}}</td>
     <td>{{a.attendee.country|default:""}}</td>
     <td>{{a.attendee.company}}</td>
     <td>{{a.attendee.email}}</td>

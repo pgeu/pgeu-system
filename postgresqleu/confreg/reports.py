@@ -440,6 +440,7 @@ class AttendeeReportManager:
                 DerivedReportField('queuepartition', 'Queue partition', "regexp_replace(upper(substring(CASE WHEN conference.queuepartitioning=1 THEN lastname WHEN conference.queuepartitioning=2 THEN firstname END, 1, 1)), '[^A-Z]', 'Other')"),
                 ReportField('company', 'Company'),
                 ReportField('address', 'Address'),
+                ReportField('city', 'City'),
                 ForeignReportField('country', 'Country', remotecol='printable_name'),
                 DictReportField('pronouns', 'Pronouns', PRONOUNS_TEXT),
                 ReportField('phone', 'Phone'),
@@ -616,7 +617,7 @@ class AttendeeReportManager:
                     'pronouns_text': 'pt',
                 }.get(table, table), _f)
 
-            query = """SELECT r.id, firstname, lastname, email, company, address, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
+            query = """SELECT r.id, firstname, lastname, email, company, address, city, phone, dietary, twittername, nick, badgescan, shareemail, vouchercode,
   country.name AS countryname, country.printable_name AS country,
   s.shirtsize, CASE WHEN conference.askpronouns THEN pt.pronountext ELSE '' END AS pronounstext,
   '{}/t/id/' || idtoken || '/' AS fullidtoken,
