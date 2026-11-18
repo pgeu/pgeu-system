@@ -36,6 +36,7 @@ from .models import ShirtSize
 from .models import PendingAdditionalOrder
 from .models import ConferenceTweetQueue
 from .models import MessagingProvider
+from .models import VisaLetterRequest
 from .models import RefundPattern
 
 from postgresqleu.invoices.models import Invoice
@@ -51,6 +52,7 @@ from .backendforms import BackendTrackForm, BackendRoomForm, BackendConferenceSe
 from .backendforms import BackendConferenceSpeakerForm, BackendGlobalSpeakerForm, BackendTagForm
 from .backendforms import BackendConferenceSessionSlotForm, BackendVolunteerSlotForm
 from .backendforms import BackendFeedbackQuestionForm, BackendDiscountCodeForm
+from .backendforms import BackendVisaLetterRequestForm
 from .backendforms import BackendAccessTokenForm
 from .backendforms import BackendConferenceSeriesForm
 from .backendforms import BackendTshirtSizeForm
@@ -324,6 +326,15 @@ def edit_feedbackquestions(request, urlname, rest):
                                urlname,
                                BackendFeedbackQuestionForm,
                                rest)
+
+
+def edit_visaletters(request, urlname, rest):
+    return backend_list_editor(request,
+                               urlname,
+                               BackendVisaLetterRequestForm,
+                               rest,
+                               allow_new=False,
+                               allow_delete=True)
 
 
 def edit_discountcodes(request, urlname, rest):
@@ -786,6 +797,7 @@ def purge_personal_data(request, urlname):
         exec_no_result("INSERT INTO confreg_aggregateddietary (conference_id, dietary, num) SELECT conference_id, lower(dietary), count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s AND dietary IS NOT NULL AND dietary != '' GROUP BY conference_id, lower(dietary)", {'confid': conference.id, })
         exec_no_result("INSERT INTO confreg_aggregatepronouns (conference_id, pronouns, num) SELECT conference_id, pronouns, count(*) FROM confreg_conferenceregistration WHERE conference_id=%(confid)s GROUP BY conference_id, pronouns", {'confid': conference.id, })
         exec_no_result("UPDATE confreg_conferenceregistration SET shirtsize_id=NULL, dietary='', phone='', address='', pronouns=0 WHERE conference_id=%(confid)s", {'confid': conference.id, })
+        VisaLetterRequest.objects.filter(conference=conference).delete()
         conference.personal_data_purged = timezone.now()
         conference.save()
         messages.info(request, "Personal data purged from conference")

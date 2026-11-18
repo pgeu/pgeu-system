@@ -1,0 +1,51 @@
+Dear Sir or Madam:
+
+I represent PostgreSQL Europe, a not-for-profit association dedicated to
+the promotion of the PostgreSQL Open Source database project within
+Europe, registered in France. We are holding one of our main annual
+conferences, {{ conference.name }}, on the {{ conference.dates }} in the 
+{{ conference.venue }}.
+
+Please accept this letter in support of the short stay visa application
+of <b>{% if passport_sex == 'male' %}Mr{% else %}Ms{% endif %} {{ full_name_passport }}</b>
+to travel to {{ conference.city }}, {{ conference.country }} in order to {% if is_speaker %}give a presentation
+at the {% else %}attend the {% endif %}{{ conference.name }} conference.
+{% if passport_sex == 'male' %}Mr{% else %}Ms{% endif %} {{ full_name_passport }}
+will be in {{ conference.country }} from {{ entry_date }} to {{ exit_date }}.
+
+{% if accommodation_covered %}
+PostgreSQL Europe will be responsible for all accommodation and travel
+expenses. Accommodation will be paid by PostgreSQL Europe directly,
+travel expenses will be reimbursed after the event.
+{% else %}
+{% if passport_sex == 'male' %}Mr{% else %}Ms{% endif %} {{ full_name_passport }}
+will be responsible for all {% if passport_sex == 'male' %}his{% else %}her{% endif %}
+accommodation and travel expenses.
+{% if is_speaker %}As a speaker at the event, {% if passport_sex == 'male' %}his{% else %}her{% endif %}
+registration fees are waived.
+{% else %}{% if passport_sex == 'male' %}His{% else %}Her{% endif %} registration
+fees for the events are paid in full.{% endif %} While in {{ conference.country }},
+{% if passport_sex == 'male' %}Mr{% else %}Ms{% endif %} {{ full_name_passport }}
+will be staying at {{ stay_at }}.
+{% if passport_sex == 'male' %}Mr{% else %}Ms{% endif %} {{ full_name_passport }}
+can be reached there at {{ contact }}.
+{% endif %}
+
+Full name as shown on passport: {{ full_name_passport }}<br/>
+Date of birth (DD/MM/YYYY): {{ date_of_birth }}<br/>
+Nationality: {{ nationality }}<br/>
+Passport no: {{ passport_number }}<br/>
+Address: {{ address }}
+
+{{ conference.name }} is one of the main conferences held every year by
+PostgreSQL Europe, and is held every year in a European City. PostgreSQL 
+is a global project and we welcome developers and users from around the 
+world to share experiences and plans at our events.
+
+We thank you for your consideration of our request.
+
+Yours faithfully,
+
+[SIGNATURE_PLACEHOLDER]
+
+{{ signer.signature_text|e|replace('\n', '<br/>')|safe }}
