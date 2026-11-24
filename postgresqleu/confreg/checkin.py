@@ -388,7 +388,7 @@ def api(request, urlname, regtoken, what):
         reg.checkedinat = timezone.now()
         reg.checkedinby = user
         reg.save()
-        reglog(reg, "Checked in", request.user)
+        reglog(reg, "Checked in", user.attendee)
         return None, None
 
     return _checkin_api(
